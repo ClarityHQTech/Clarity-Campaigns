@@ -80,6 +80,17 @@ export function PricingSummary({
 
   const metricLabel = outcomeMetricLabel(config.outcomeMetric, config.outcomeCustomLabel);
 
+  // Split vendor lines: influencer shown as own at-cost line, others grouped
+  const influencerLines = vendorLines.filter(
+    (v) => adminVendors.find((a) => a.id === v.id)?.mediaType === "influencer" && v.currency === "USD"
+  );
+  const otherVendorLinesUsd = vendorLines.filter(
+    (v) => adminVendors.find((a) => a.id === v.id)?.mediaType !== "influencer" && v.currency === "USD"
+  );
+  const specialistLinesInr = vendorLines.filter((v) => v.currency === "INR");
+  const influencerCost = influencerLines.reduce((s, v) => s + v.cost, 0);
+  const otherVendorCostUsd = otherVendorLinesUsd.reduce((s, v) => s + v.cost, 0);
+
   return (
     <div>
       <div className="mb-4 flex gap-2">
@@ -187,76 +198,131 @@ export function PricingSummary({
         </Card>
       )}
 
-      <Card>
-        <CardContent className="pt-4">
-          <div className="font-mono-label text-[9.5px] text-muted-foreground mb-3">Cost breakdown (multiple-eligible)</div>
-          <table className="w-full text-[12.5px]">
-            <tbody>
-              <tr className="border-b border-border">
-                <td className="py-1.5 text-muted-foreground">Pod / HR cost</td>
-                <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.podCost)}</td>
-              </tr>
-              <tr className="border-b border-border">
-                <td className="py-1.5 text-muted-foreground">Asset cost</td>
-                <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.assetCost)}</td>
-              </tr>
-              <tr className="border-b border-border">
-                <td className="py-1.5 text-muted-foreground">
-                  Tech cost {sku !== "abm" && <span className="text-[10px]">(not modelled for this SKU)</span>}
-                </td>
-                <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.techCost)}</td>
-              </tr>
-              <tr className="border-b-2 border-primary/40 font-semibold">
-                <td className="py-1.5">Total cost</td>
-                <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.totalCost)}</td>
-              </tr>
-              {config.priceMode === "fixed" ? (
+      <div className="flex flex-col gap-3">
+        {/* Pod / Human cost — its own card */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Human cost (pod)</div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
                 <tr className="border-b border-border">
-                  <td className="py-1.5 text-muted-foreground">Cost × 4</td>
-                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.fixedComponent)}</td>
+                  <td className="py-1.5 text-muted-foreground">People / HR cost</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.podCost)}</td>
                 </tr>
-              ) : (
-                <>
+                <tr>
+                  <td className="py-1 text-[11px] text-muted-foreground-2">After {pricing.multiple}× multiple</td>
+                  <td className="py-1 text-right font-mono text-[11px] text-muted-foreground-2">
+                    {fmtMoney(pricing.podCost * pricing.multiple)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* Production / assets / tech */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Production &amp; tech</div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                <tr className="border-b border-border">
+                  <td className="py-1.5 text-muted-foreground">Asset cost</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.assetCost)}</td>
+                </tr>
+                <tr className="border-b border-border">
+                  <td className="py-1.5 text-muted-foreground">
+                    Tech cost {sku !== "abm" && <span className="text-[10px]">(not modelled for this SKU)</span>}
+                  </td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.techCost)}</td>
+                </tr>
+                <tr>
+                  <td className="py-1 text-[11px] text-muted-foreground-2">After {pricing.multiple}× multiple</td>
+                  <td className="py-1 text-right font-mono text-[11px] text-muted-foreground-2">
+                    {fmtMoney((pricing.assetCost + pricing.techCost) * pricing.multiple)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* Client price summary */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Client price</div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                {config.priceMode === "fixed" ? (
                   <tr className="border-b border-border">
-                    <td className="py-1.5 text-muted-foreground">Cost × 3 (fixed component)</td>
+                    <td className="py-1.5 text-muted-foreground">Total cost × 4</td>
                     <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.fixedComponent)}</td>
                   </tr>
-                  <tr className="border-b border-border">
-                    <td className="py-1.5 text-muted-foreground">
-                      Variable at target ({outcomeTarget} × {fmtMoney(config.outcomeRate)}/{metricLabel})
-                    </td>
-                    <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.baselineVariable)}</td>
-                  </tr>
-                </>
-              )}
-              <tr className="border-b-2 border-primary font-semibold text-primary">
-                <td className="py-2">Client price ({config.priceMode})</td>
-                <td className="py-2 text-right font-mono">{fmtMoney(pricing.totalPrice)}</td>
-              </tr>
-              <tr className="border-b border-dashed border-border">
-                <td className="py-1.5 text-muted-foreground">Ad spend ({config.adSpendCadence}, at-cost, separate)</td>
-                <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.adSpend)}</td>
-              </tr>
-              <tr className="border-b border-dashed border-border">
-                <td className="py-1.5 text-muted-foreground">Vendor costs (at-cost, separate)</td>
-                <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.vendorCostUsd)}</td>
-              </tr>
-              {pricing.specialistCostInr > 0 && (
-                <tr className="border-b border-dashed border-border">
-                  <td className="py-1.5 text-muted-foreground">Specialist retainer capacity (at-cost, separate, ₹)</td>
-                  <td className="py-1.5 text-right font-mono">{fmtInr(pricing.specialistCostInr)}</td>
+                ) : (
+                  <>
+                    <tr className="border-b border-border">
+                      <td className="py-1.5 text-muted-foreground">Total cost × 3 (fixed)</td>
+                      <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.fixedComponent)}</td>
+                    </tr>
+                    <tr className="border-b border-border">
+                      <td className="py-1.5 text-muted-foreground">
+                        Variable at target ({outcomeTarget} × {fmtMoney(config.outcomeRate)}/{metricLabel})
+                      </td>
+                      <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.baselineVariable)}</td>
+                    </tr>
+                  </>
+                )}
+                <tr className="border-t-2 border-primary font-semibold text-primary">
+                  <td className="py-2">Client price ({config.priceMode})</td>
+                  <td className="py-2 text-right font-mono">{fmtMoney(pricing.totalPrice)}</td>
                 </tr>
-              )}
-              <tr>
-                <td className="py-2 font-heading text-[15px] font-semibold">Grand total (USD)</td>
-                <td className="py-2 text-right font-heading text-[17px] font-semibold text-primary">
-                  {fmtMoney(pricing.grandTotal)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* At-cost items — separate from price multiple */}
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">At-cost — separate from price multiple</div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                <tr className="border-b border-dashed border-border">
+                  <td className="py-1.5 text-muted-foreground">Ad spend ({config.adSpendCadence})</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.adSpend)}</td>
+                </tr>
+                {influencerCost > 0 && (
+                  <tr className="border-b border-dashed border-border">
+                    <td className="py-1.5 text-muted-foreground">
+                      Influencer / UGC{" "}
+                      <span className="text-[10px]">({influencerLines.map((v) => v.name).join(", ")})</span>
+                    </td>
+                    <td className="py-1.5 text-right font-mono">{fmtMoney(influencerCost)}</td>
+                  </tr>
+                )}
+                {otherVendorCostUsd > 0 && (
+                  <tr className="border-b border-dashed border-border">
+                    <td className="py-1.5 text-muted-foreground">Other vendor costs</td>
+                    <td className="py-1.5 text-right font-mono">{fmtMoney(otherVendorCostUsd)}</td>
+                  </tr>
+                )}
+                {pricing.specialistCostInr > 0 && (
+                  <tr className="border-b border-dashed border-border">
+                    <td className="py-1.5 text-muted-foreground">Specialist retainer capacity (₹)</td>
+                    <td className="py-1.5 text-right font-mono">{fmtInr(pricing.specialistCostInr)}</td>
+                  </tr>
+                )}
+                <tr>
+                  <td className="py-2 font-heading text-[15px] font-semibold">Grand total (USD)</td>
+                  <td className="py-2 text-right font-heading text-[17px] font-semibold text-primary">
+                    {fmtMoney(pricing.grandTotal)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

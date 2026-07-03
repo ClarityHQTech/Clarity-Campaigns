@@ -25,8 +25,7 @@ import { Download } from "lucide-react";
 
 const SUB_STEPS = [
   { key: "brief", label: "Brief" },
-  { key: "pod", label: "Pod & Vendor" },
-  { key: "timeline", label: "Timeline" },
+  { key: "pod", label: "Pod & Timeline" },
   { key: "results", label: "Expected Results" },
   { key: "pricing", label: "Pricing" },
 ];
@@ -188,7 +187,7 @@ export default function BuildWizardPage() {
                   </div>
                 </div>
                 <p className="mt-2 text-[11px] text-[#6a7280]">
-                  Sprints group the process steps below into the Timeline step&apos;s sprint blocks.
+                  Sprints group the pod steps into the timeline blocks below.
                 </p>
               </CardContent>
             </Card>
@@ -211,27 +210,29 @@ export default function BuildWizardPage() {
               onUpdateCustomVendor={(id, partial) => updateCustomVendor(sku, id, partial)}
               onRemoveCustomVendor={(id) => removeCustomVendor(sku, id)}
             />
+            {sprintBreakdown && (
+              <div>
+                <div className="font-mono-label text-[9.5px] text-primary-hover mb-3">Timeline</div>
+                <Timeline
+                  breakdown={sprintBreakdown}
+                  approved={config.timelineApproved}
+                  onApprove={() => approveTimeline(sku)}
+                />
+              </div>
+            )}
           </div>
         )}
 
-        {stepIndex === 2 && sprintBreakdown && (
-          <Timeline
-            breakdown={sprintBreakdown}
-            approved={config.timelineApproved}
-            onApprove={() => approveTimeline(sku)}
-          />
-        )}
-
-        {stepIndex === 3 && (
+        {stepIndex === 2 && (
           <ResultsProjection sku={sku} config={config} onChange={(p) => updateConfig(sku, p)} />
         )}
 
-        {stepIndex === 4 && (
+        {stepIndex === 3 && (
           <>
             {!config.timelineApproved && (
               <Card className="mb-4 border-destructive/40">
                 <CardContent className="pt-4 text-[12.5px] text-destructive">
-                  Timeline has not been approved yet. Go back and approve it before finalizing pricing.
+                  Timeline has not been approved yet. Go back to Pod &amp; Timeline and approve it before finalizing pricing.
                 </CardContent>
               </Card>
             )}

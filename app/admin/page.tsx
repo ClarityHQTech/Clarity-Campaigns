@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Trash2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const MEDIA_TYPES: VendorMediaType[] = ["video", "image", "other"];
+const MEDIA_TYPES: VendorMediaType[] = ["video", "image", "influencer", "other"];
 
 export default function AdminPage() {
   const freelancers = useAdminStore((s) => s.freelancers);

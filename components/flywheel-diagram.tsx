@@ -1,13 +1,14 @@
 import { Users, TrendingUp, Repeat } from "lucide-react";
 
-const SIZE = 440;
+const SIZE = 580;
 const CENTER = SIZE / 2;
-const OUTER_R = 130;
-const INNER_R = 86;
+const OUTER_R = 168;
+const INNER_R = 110;
 const ICON_R = (OUTER_R + INNER_R) / 2;
-const LABEL_R = OUTER_R + 32;
+const LABEL_R = OUTER_R + 40;
 const GAP_DEG = 8;
 const ARC_DEG = 360 / 3 - GAP_DEG;
+const RING_R = OUTER_R + 20;
 
 function polar(r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -37,7 +38,38 @@ const STAGES = [
 
 export function FlywheelDiagram() {
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height="100%" role="img" aria-label="Brand Intelligence flywheel: Acquisition, Conversion, Retention">
+    <svg
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      width="100%"
+      height="100%"
+      role="img"
+      aria-label="Brand Intelligence flywheel: Acquisition, Conversion, Retention"
+    >
+      <defs>
+        <style>{`
+          @keyframes fw-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+          .fw-ring {
+            transform-origin: ${CENTER}px ${CENTER}px;
+            animation: fw-spin 22s linear infinite;
+          }
+        `}</style>
+      </defs>
+
+      {/* Rotating outer decorative ring */}
+      <circle
+        className="fw-ring"
+        cx={CENTER}
+        cy={CENTER}
+        r={RING_R}
+        fill="none"
+        stroke="rgba(233,148,26,0.25)"
+        strokeWidth="1.5"
+        strokeDasharray="5 11"
+      />
+
       {STAGES.map((s) => {
         const end = s.start + ARC_DEG;
         const mid = (s.start + end) / 2;
@@ -46,19 +78,19 @@ export function FlywheelDiagram() {
         return (
           <g key={s.key}>
             <path d={ringSegmentPath(s.start, end)} fill={s.tint} stroke={s.color} strokeWidth={1} />
-            <circle cx={iconPos.x} cy={iconPos.y} r={17} fill="var(--card)" stroke={s.color} strokeWidth={1.5} />
-            <foreignObject x={iconPos.x - 9} y={iconPos.y - 9} width={18} height={18}>
-              <s.Icon size={18} color={s.color} strokeWidth={1.75} />
+            <circle cx={iconPos.x} cy={iconPos.y} r={20} fill="var(--card)" stroke={s.color} strokeWidth={1.5} />
+            <foreignObject x={iconPos.x - 11} y={iconPos.y - 11} width={22} height={22}>
+              <s.Icon size={22} color={s.color} strokeWidth={1.75} />
             </foreignObject>
             <text
               x={labelPos.x}
               y={labelPos.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="11"
-              fontWeight={600}
+              fontSize="12"
+              fontWeight={700}
               fontFamily="var(--font-mono)"
-              letterSpacing="0.06em"
+              letterSpacing="0.07em"
               fill={s.color}
             >
               {s.label}
@@ -67,11 +99,11 @@ export function FlywheelDiagram() {
         );
       })}
 
-      <circle cx={CENTER} cy={CENTER} r={INNER_R - 4} fill="var(--foreground)" />
-      <text x={CENTER} y={CENTER - 8} textAnchor="middle" dominantBaseline="middle" fontSize="14" fontWeight={600} fontFamily="var(--font-heading)" fill="var(--background)">
+      <circle cx={CENTER} cy={CENTER} r={INNER_R - 5} fill="var(--foreground)" />
+      <text x={CENTER} y={CENTER - 10} textAnchor="middle" dominantBaseline="middle" fontSize="17" fontWeight={600} fontFamily="var(--font-heading)" fill="var(--background)">
         BRAND
       </text>
-      <text x={CENTER} y={CENTER + 12} textAnchor="middle" dominantBaseline="middle" fontSize="14" fontWeight={600} fontFamily="var(--font-heading)" fill="var(--background)">
+      <text x={CENTER} y={CENTER + 14} textAnchor="middle" dominantBaseline="middle" fontSize="17" fontWeight={600} fontFamily="var(--font-heading)" fill="var(--background)">
         INTELLIGENCE
       </text>
     </svg>

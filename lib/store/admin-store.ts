@@ -13,7 +13,7 @@ export interface Freelancer {
   rate: number; // $/hr
 }
 
-export type VendorMediaType = "video" | "image" | "other";
+export type VendorMediaType = "video" | "image" | "influencer" | "other";
 
 export interface AdminVendor {
   id: string;
@@ -48,7 +48,7 @@ const VENDOR_MEDIA_TYPE: Record<string, VendorMediaType> = {
   "ai-video-studio": "video",
   "film-director": "video",
   photographer: "image",
-  "influencer-ugc-creator": "image",
+  "influencer-ugc-creator": "influencer",
 };
 
 function buildSeedVendors(): AdminVendor[] {

@@ -41,6 +41,7 @@ export function VendorTogglePanel({
   const visibleVendors = scopedVendors.filter((v) => {
     if (v.mediaType === "video") return hasVideoAsset;
     if (v.mediaType === "image") return hasImageAsset;
+    // influencer and other always shown
     return true;
   });
   const gatedCount = scopedVendors.length - visibleVendors.length;

@@ -24,7 +24,7 @@ export interface CampaignType {
 export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   abm: {
     id: "abm",
-    label: "ABM / Outbound",
+    label: "Outbound Sales",
     mode: "sales",
     desc: "Multi-touch outbound via email, LinkedIn, and WhatsApp on a fixed account book.",
     channels: ["Email", "LinkedIn", "WhatsApp"],
@@ -57,7 +57,7 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   },
   performance: {
     id: "performance",
-    label: "Performance / Paid 360",
+    label: "Performance Marketing",
     mode: "marketing",
     desc: "Paid media on Meta and Google with creatives and weekly optimisation.",
     channels: ["Meta Ads", "Google Ads", "Instagram"],
@@ -68,7 +68,7 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   },
   retention: {
     id: "retention",
-    label: "Retention / Lifecycle",
+    label: "Customer Retention",
     mode: "sales",
     desc: "Behavioural email and WhatsApp flows for existing customers.",
     channels: ["Email", "WhatsApp"],

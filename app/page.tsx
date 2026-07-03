@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CAMPAIGN_TYPE_LIST } from "@/lib/data/campaign-types";
+import { CAMPAIGN_TYPES, SkuId } from "@/lib/data/campaign-types";
 import { SkuCard } from "@/components/sku-card";
 import { FlywheelDiagram } from "@/components/flywheel-diagram";
 import { Button } from "@/components/ui/button";
@@ -33,10 +33,40 @@ const PROCESS_STEPS = [
   },
 ];
 
+const FLYWHEEL_GROUPS: {
+  stage: string;
+  label: string;
+  colorClass: string;
+  borderClass: string;
+  skus: SkuId[];
+}[] = [
+  {
+    stage: "Acquisition",
+    label: "ACQUISITION",
+    colorClass: "text-primary",
+    borderClass: "border-primary/30",
+    skus: ["social", "content"],
+  },
+  {
+    stage: "Conversion",
+    label: "CONVERSION",
+    colorClass: "text-secondary",
+    borderClass: "border-secondary/30",
+    skus: ["abm", "performance"],
+  },
+  {
+    stage: "Retention",
+    label: "RETENTION",
+    colorClass: "text-destructive",
+    borderClass: "border-destructive/30",
+    skus: ["retention"],
+  },
+];
+
 export default function MarketplacePage() {
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-10">
-      <div className="mb-14 grid grid-cols-1 items-center gap-8 border-b border-border pb-12 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="mb-14 grid grid-cols-1 items-center gap-8 border-b border-border pb-12 lg:grid-cols-[1fr_480px]">
         <div>
           <div className="font-mono-label text-[10px] text-primary mb-1">Campaign command centre</div>
           <h1 className="font-heading text-3xl font-semibold tracking-tight mb-3 leading-tight">
@@ -57,7 +87,7 @@ export default function MarketplacePage() {
             <Button size="lg">Start with your brand foundation</Button>
           </Link>
         </div>
-        <div className="mx-auto w-full max-w-[320px]">
+        <div className="mx-auto w-full max-w-[480px]">
           <FlywheelDiagram />
         </div>
       </div>
@@ -91,9 +121,19 @@ export default function MarketplacePage() {
           for — not a hard rule, a starting point for the conversation.
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CAMPAIGN_TYPE_LIST.map((ct) => (
-          <SkuCard key={ct.id} ct={ct} />
+
+      <div className="flex flex-col gap-8">
+        {FLYWHEEL_GROUPS.map((group) => (
+          <div key={group.stage}>
+            <div className={`flex items-center gap-3 mb-3 pb-2 border-b ${group.borderClass}`}>
+              <span className={`font-mono-label text-[9px] ${group.colorClass}`}>{group.label}</span>
+            </div>
+            <div className={`grid grid-cols-1 gap-4 ${group.skus.length === 1 ? "sm:grid-cols-1 max-w-sm" : "sm:grid-cols-2"}`}>
+              {group.skus.map((skuId) => (
+                <SkuCard key={skuId} ct={CAMPAIGN_TYPES[skuId]} />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </div>

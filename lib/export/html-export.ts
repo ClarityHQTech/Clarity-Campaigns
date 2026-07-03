@@ -118,7 +118,11 @@ function podHtml(pod: PodRow[]): string {
 ${pod
   .map(
     (row) => `<div class="card">
-  <table><tr><td style="width:26px">${row.stepNumber}</td><td><strong>${esc(row.stepTitle)}</strong></td><td class="num">${esc(row.role)} · ${row.hours} hrs @ ${fmtMoney(row.rate)}/hr = ${fmtMoney(row.hours * row.rate)}</td></tr></table>
+  <table><tr>
+    <td style="width:26px;color:#6a7280;font-size:12px">${row.stepNumber}</td>
+    <td><strong>${esc(row.stepTitle)}</strong> <span style="color:#6a7280;font-size:12px">(${esc(row.role)})</span></td>
+    <td class="num" style="white-space:nowrap">${row.hours} hrs</td>
+  </tr></table>
   <div class="deliverable">${esc(row.out)}</div>
 </div>`
   )
