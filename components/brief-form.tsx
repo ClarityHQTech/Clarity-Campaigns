@@ -3,7 +3,8 @@
 import { CampaignType } from "@/lib/data/campaign-types";
 import { CampaignConfig } from "@/lib/store/campaign-store";
 import { ASSET_TYPES } from "@/lib/data/campaign-types";
-import { INDUSTRY_LIST } from "@/lib/data/industry-benchmarks";
+import { INDUSTRY_LIST, IndustryId } from "@/lib/data/industry-benchmarks";
+import { industryFunnelBenchmark } from "@/lib/calc/reach";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,16 @@ export function BriefForm({
     onChange({ assets: config.assets.filter((_, i) => i !== index) });
   }
 
+  function handleIndustryChange(industryId: string) {
+    const benchmark = industryFunnelBenchmark(industryId as IndustryId, ct.channels);
+    onChange({
+      industry: industryId,
+      qualifiedPct: benchmark.qualifiedPct,
+      opportunityPct: benchmark.opportunityPct,
+      closePct: benchmark.closePct,
+    });
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <Section title="Campaign Overview">
@@ -101,19 +112,35 @@ export function BriefForm({
       </Section>
 
       <Section title="Audience & Targeting">
-        {isSales ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-3">
+          <div>
+            <Label>Industry / Category</Label>
+            <Select value={config.industry} onValueChange={handleIndustryChange}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {INDUSTRY_LIST.map((i) => (
+                  <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{isSales ? "Contact list size" : "Target audience size (drives staffing scale)"}</Label>
+            <Input
+              type="number"
+              value={config.audienceSize}
+              onChange={(e) => onChange({ audienceSize: Number(e.target.value) || 0 })}
+            />
+          </div>
+        </div>
+        <p className="mb-3 text-[11px] text-[#6a7280]">
+          Industry sets the suggested funnel benchmark below (Funnel &amp; Commercial) — you can still edit it there.
+        </p>
+        {isSales && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2">
+            <div>
               <Label>ICP / Target Audience</Label>
               <Input value={config.icp} onChange={(e) => onChange({ icp: e.target.value })} />
-            </div>
-            <div>
-              <Label>Contact list size</Label>
-              <Input
-                type="number"
-                value={config.audienceSize}
-                onChange={(e) => onChange({ audienceSize: Number(e.target.value) || 0 })}
-              />
             </div>
             <div>
               <Label>Source</Label>
@@ -125,28 +152,6 @@ export function BriefForm({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <Label>Industry / Category</Label>
-              <Select value={config.industry} onValueChange={(v) => onChange({ industry: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {INDUSTRY_LIST.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Target audience size (drives staffing scale)</Label>
-              <Input
-                type="number"
-                value={config.audienceSize}
-                onChange={(e) => onChange({ audienceSize: Number(e.target.value) || 0 })}
-              />
             </div>
           </div>
         )}
@@ -221,6 +226,10 @@ export function BriefForm({
       </Section>
 
       <Section title="Funnel & Commercial">
+        <p className="mb-2 text-[11px] text-[#6a7280]">
+          Suggested from the {INDUSTRY_LIST.find((i) => i.id === config.industry)?.name} industry benchmark for
+          this campaign&apos;s channels — editable.
+        </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <Label>Qualified %</Label>

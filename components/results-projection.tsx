@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { SkuId } from "@/lib/data/campaign-types";
 import { CampaignConfig } from "@/lib/store/campaign-store";
 import { computeReach, computeAudienceFunnel } from "@/lib/calc/reach";
@@ -29,8 +30,31 @@ export function ResultsProjection({
   config: CampaignConfig;
   onChange: (partial: Partial<CampaignConfig>) => void;
 }) {
+  const reachResult =
+    sku === "performance" ? computeReach(config.industry as IndustryId, config.adBudgetForReach, config.channels) : null;
+
+  // Once ad spend is entered, the channel+spend-weighted funnel here supersedes
+  // the generic industry benchmark — synced back so pricing's outcome target
+  // (and anything else funnel-dependent) stays consistent, same as the source
+  // tool writing computeReach()'s output into the funnel % fields.
+  useEffect(() => {
+    if (
+      reachResult &&
+      (reachResult.qualifiedPct !== config.qualifiedPct ||
+        reachResult.opportunityPct !== config.opportunityPct ||
+        reachResult.closurePct !== config.closePct)
+    ) {
+      onChange({
+        qualifiedPct: reachResult.qualifiedPct,
+        opportunityPct: reachResult.opportunityPct,
+        closePct: reachResult.closurePct,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reachResult?.qualifiedPct, reachResult?.opportunityPct, reachResult?.closurePct]);
+
   if (sku === "performance") {
-    const result = computeReach(config.industry as IndustryId, config.adBudgetForReach, config.channels);
+    const result = reachResult;
     return (
       <div>
         <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -73,7 +97,7 @@ export function ResultsProjection({
               </CardContent>
             </Card>
             <p className="text-[11.5px] text-muted-foreground">
-              Funnel benchmark: Qualified {result.qualifiedPct}%, Opportunity {result.opportunityPct}%, Close {result.closurePct}% — indexed per channel from platform benchmarks.
+              Funnel benchmark: Qualified {result.qualifiedPct}%, Opportunity {result.opportunityPct}%, Close {result.closurePct}% — indexed per channel from platform benchmarks, and now driving the Funnel &amp; Commercial fields in the Brief.
             </p>
             <div className="mt-4">
               <Label>ASP / Deal value ($)</Label>
@@ -110,6 +134,9 @@ export function ResultsProjection({
             <div className="font-heading text-2xl font-semibold text-secondary">{fmtMoney(funnel.revenuePotential)}</div>
             <p className="mt-1 text-[11.5px] text-muted-foreground">
               {funnel.audience.toLocaleString()} audience × {config.qualifiedPct}% qualified × {config.opportunityPct}% opportunity × {config.closePct}% close × {fmtMoney(config.asp)} ASP.
+            </p>
+            <p className="mt-2 text-[11px] text-muted-foreground-2">
+              Qualified/opportunity/close % are suggested from the industry benchmark in the Brief step — edit them there.
             </p>
           </CardContent>
         </Card>

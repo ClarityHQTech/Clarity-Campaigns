@@ -81,6 +81,37 @@ export function computeReach(
   };
 }
 
+export interface FunnelBenchmark {
+  qualifiedPct: number;
+  opportunityPct: number;
+  closePct: number;
+}
+
+// Suggests a funnel % benchmark for a SKU's locked channels in a given industry,
+// by averaging each channel's CHANNEL_BENCH.funnelMult against IND[industry].funnel.
+// Channels with no entry (or organic/unmodelled) are treated as neutral (1x) so
+// they don't skew the benchmark — this is a lighter-weight version of the
+// spend-weighted funnel in computeReach(), used to suggest a starting point
+// wherever there's no ad-spend simulation driving it (it remains editable).
+export function industryFunnelBenchmark(industryId: IndustryId, channels: string[]): FunnelBenchmark {
+  const data = IND[industryId];
+  if (!data || channels.length === 0) {
+    return { qualifiedPct: data?.funnel[0] ?? 5, opportunityPct: data?.funnel[1] ?? 25, closePct: data?.funnel[2] ?? 20 };
+  }
+
+  const mults = channels.map((ch) => {
+    const bench = CHANNEL_BENCH[ch];
+    return bench && bench.paid ? bench.funnelMult : ([1, 1, 1] as [number, number, number]);
+  });
+  const avg = (i: number) => mults.reduce((sum, m) => sum + m[i], 0) / mults.length;
+
+  return {
+    qualifiedPct: Math.round(data.funnel[0] * avg(0) * 10) / 10,
+    opportunityPct: Math.round(data.funnel[1] * avg(1) * 10) / 10,
+    closePct: Math.round(data.funnel[2] * avg(2) * 10) / 10,
+  };
+}
+
 export interface AudienceFunnelResult {
   audience: number;
   qualified: number;
