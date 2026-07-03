@@ -1,5 +1,5 @@
 import { SkuId } from "../data/campaign-types";
-import { PROCS, ProcStep } from "../data/procs";
+import { PROCS } from "../data/procs";
 
 export interface SprintDay {
   rangeLabel: string;
@@ -20,14 +20,34 @@ export interface SprintBreakdown {
   approxWeeks: number;
 }
 
+// Minimal shape required from admin template steps — avoids importing "use client" admin-store.
+type TemplateStep = {
+  stepNumber: number;
+  title: string;
+  role: string;
+  days: number;
+  active: boolean;
+};
+
+type NormStep = { n: number; t: string; role: string; days: number };
+
 // Ported from buildSprintBreakdown() / sprintHtml() in the source HTML.
-export function buildSprintBreakdown(sku: SkuId, sprintCountInput: number): SprintBreakdown {
-  const steps: ProcStep[] = PROCS[sku] ?? [];
+// When templateSteps are provided, their active steps replace PROCS as the source of truth.
+export function buildSprintBreakdown(sku: SkuId, sprintCountInput: number, templateSteps?: TemplateStep[]): SprintBreakdown {
+  let steps: NormStep[];
+  if (templateSteps && templateSteps.length > 0) {
+    steps = templateSteps
+      .filter((s) => s.active)
+      .map((s) => ({ n: s.stepNumber, t: s.title, role: s.role, days: s.days }));
+  } else {
+    steps = (PROCS[sku] ?? []).map((s) => ({ n: s.n, t: s.t, role: s.role, days: s.days }));
+  }
+
   const totalDays = steps.reduce((sum, s) => sum + s.days, 0);
   const sprintCount = Math.max(1, sprintCountInput || 1);
   const daysPerSprint = Math.ceil(totalDays / sprintCount);
 
-  const sprints: { n: number; steps: ProcStep[]; days: number }[] = [];
+  const sprints: { n: number; steps: NormStep[]; days: number }[] = [];
   for (let s = 0; s < sprintCount; s++) sprints.push({ n: s + 1, steps: [], days: 0 });
 
   let cum = 0;

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { Trash2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,23 +31,36 @@ export default function AdminPage() {
   const updateVendor = useAdminStore((s) => s.updateVendor);
   const removeVendor = useAdminStore((s) => s.removeVendor);
 
+  const podTemplates = useAdminStore((s) => s.podTemplates);
+  const addTemplateStep = useAdminStore((s) => s.addTemplateStep);
+  const updateTemplateStep = useAdminStore((s) => s.updateTemplateStep);
+  const removeTemplateStep = useAdminStore((s) => s.removeTemplateStep);
+  const toggleTemplateStep = useAdminStore((s) => s.toggleTemplateStep);
+
   const campaignConfigs = useCampaignStore((s) => s.configs);
   const getConfig = useCampaignStore((s) => s.getConfig);
 
   const [tab, setTab] = useState("freelancers");
   const [biddingSku, setBiddingSku] = useState<SkuId>("abm");
+  const [templateSku, setTemplateSku] = useState<SkuId>("abm");
 
   const biddingConfig = campaignConfigs[biddingSku] ?? getConfig(biddingSku);
   const biddingCt = CAMPAIGN_TYPES[biddingSku];
+  const biddingTemplateSteps = podTemplates[biddingSku];
 
   const biddingPod = useMemo(() => {
-    const suggested = buildAutoPod(biddingSku, biddingConfig.audienceSize);
+    const suggested = buildAutoPod(biddingSku, biddingConfig.audienceSize, biddingTemplateSteps);
     return applyPodOverrides(suggested, biddingConfig.podOverrides ?? {});
-  }, [biddingSku, biddingConfig]);
+  }, [biddingSku, biddingConfig, biddingTemplateSteps]);
 
   const biddingSprintBreakdown = useMemo(
-    () => buildSprintBreakdown(biddingSku, biddingConfig.sprints ?? 1),
-    [biddingSku, biddingConfig]
+    () => buildSprintBreakdown(biddingSku, biddingConfig.sprints ?? 1, biddingTemplateSteps),
+    [biddingSku, biddingConfig, biddingTemplateSteps]
+  );
+
+  const templateSteps = useMemo(
+    () => [...(podTemplates[templateSku] ?? [])].sort((a, b) => a.stepNumber - b.stepNumber),
+    [podTemplates, templateSku]
   );
 
   function handleExportBidding() {
@@ -76,7 +90,7 @@ export default function AdminPage() {
         <div className="font-mono-label text-[10px] text-primary mb-1">Internal — no auth in this demo</div>
         <h1 className="font-heading text-2xl font-semibold">Admin</h1>
         <p className="text-[13px] text-muted-foreground mt-1">
-          Manage the named freelancer roster, vendor list, and export freelancer call-for-bids documents.
+          Manage the named freelancer roster, vendor list, campaign pod templates, and export freelancer call-for-bids documents.
         </p>
       </div>
 
@@ -84,6 +98,7 @@ export default function AdminPage() {
         <TabsList className="mb-6">
           <TabsTrigger value="freelancers">Freelancers</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          <TabsTrigger value="templates">Campaign Templates</TabsTrigger>
           <TabsTrigger value="bidding">Freelancer Call for Bids</TabsTrigger>
         </TabsList>
 
@@ -226,12 +241,134 @@ export default function AdminPage() {
           </Button>
         </TabsContent>
 
+        <TabsContent value="templates">
+          <p className="mb-4 text-[12.5px] text-muted-foreground">
+            Define the exact roles, hours, day allocations, and deliverables for each campaign type.
+            Toggle steps active or inactive to include or exclude them from pod planning, the sprint
+            timeline, and the freelancer call-for-bids document. Changes here feed directly into the
+            campaign builder and bidding export.
+          </p>
+
+          <Card className="mb-5 bg-paper border-paper-border">
+            <CardContent className="pt-5 pb-4">
+              <div className="font-mono-label text-[9.5px] text-primary-hover mb-3">Select campaign type</div>
+              <div className="w-64">
+                <Select value={templateSku} onValueChange={(v) => setTemplateSku(v as SkuId)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CAMPAIGN_TYPE_LIST.map((ct) => (
+                      <SelectItem key={ct.id} value={ct.id}>{ct.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                {templateSteps.filter((s) => s.active).length} active step{templateSteps.filter((s) => s.active).length !== 1 ? "s" : ""} ·{" "}
+                {templateSteps.length} total
+              </p>
+            </CardContent>
+          </Card>
+
+          <div className="flex flex-col gap-2">
+            {templateSteps.map((step) => (
+              <Card key={step.id} className={cn("transition-opacity", !step.active && "opacity-50")}>
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex flex-col items-center gap-1 pb-0.5">
+                      <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-wide">Active</span>
+                      <Switch
+                        checked={step.active}
+                        onCheckedChange={() => toggleTemplateStep(templateSku, step.id)}
+                      />
+                    </div>
+                    <div className="w-14">
+                      <Label>Step #</Label>
+                      <Input
+                        type="number"
+                        value={step.stepNumber}
+                        onChange={(e) =>
+                          updateTemplateStep(templateSku, step.id, { stepNumber: Number(e.target.value) || 1 })
+                        }
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[130px]">
+                      <Label>Title</Label>
+                      <Input
+                        value={step.title}
+                        onChange={(e) => updateTemplateStep(templateSku, step.id, { title: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[160px]">
+                      <Label>Role</Label>
+                      <Input
+                        list="role-library-options-tpl"
+                        value={step.role}
+                        onChange={(e) => updateTemplateStep(templateSku, step.id, { role: e.target.value })}
+                      />
+                    </div>
+                    <div className="w-20">
+                      <Label>Hours</Label>
+                      <Input
+                        type="number"
+                        value={step.hours}
+                        onChange={(e) =>
+                          updateTemplateStep(templateSku, step.id, { hours: Number(e.target.value) || 0 })
+                        }
+                      />
+                    </div>
+                    <div className="w-24">
+                      <Label>Rate ($/hr)</Label>
+                      <Input
+                        type="number"
+                        value={step.rate}
+                        onChange={(e) =>
+                          updateTemplateStep(templateSku, step.id, { rate: Number(e.target.value) || 0 })
+                        }
+                      />
+                    </div>
+                    <div className="w-20">
+                      <Label>Days</Label>
+                      <Input
+                        type="number"
+                        value={step.days}
+                        onChange={(e) =>
+                          updateTemplateStep(templateSku, step.id, { days: Number(e.target.value) || 0 })
+                        }
+                      />
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => removeTemplateStep(templateSku, step.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="mt-3">
+                    <Label>Deliverable / expected output</Label>
+                    <Input
+                      value={step.deliverable}
+                      placeholder="What this step produces for the client"
+                      onChange={(e) => updateTemplateStep(templateSku, step.id, { deliverable: e.target.value })}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <datalist id="role-library-options-tpl">
+            {ROLE_LIBRARY.map((r) => (
+              <option key={r.name} value={r.name} />
+            ))}
+          </datalist>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => addTemplateStep(templateSku)}>
+            + Add step
+          </Button>
+        </TabsContent>
+
         <TabsContent value="bidding">
           <p className="mb-4 text-[12.5px] text-muted-foreground">
             Generate a call-for-bids document for a campaign. The document lists every pod role with its
             deliverable, indicative rate, and timeline window — with blank bid fields for each freelancer to
             fill in. Freelancer assignments made in the campaign builder are reflected as &quot;provisionally
-            assigned&quot; so unassigned roles are clearly open.
+            assigned&quot; so unassigned roles are clearly open. Pod steps are sourced from the campaign
+            template defined in the Campaign Templates tab.
           </p>
 
           <Card className="mb-4 bg-paper border-paper-border">
@@ -277,6 +414,7 @@ export default function AdminPage() {
                         <span className="font-mono text-[10px] text-muted-foreground w-5 text-right">{row.stepNumber}</span>
                         <span className="flex-1 text-foreground">{row.stepTitle}</span>
                         <span className="text-muted-foreground">{row.role}</span>
+                        <span className="font-mono text-[10px] text-muted-foreground-2">{row.hours}h @ ${row.rate}/hr</span>
                         {assignedFreelancer ? (
                           <span className="font-mono text-[10px] text-primary">{assignedFreelancer.name}</span>
                         ) : (

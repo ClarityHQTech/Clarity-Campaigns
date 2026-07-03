@@ -49,6 +49,8 @@ export default function BuildWizardPage() {
   const removeCustomVendor = useCampaignStore((s) => s.removeCustomVendor);
   const approveTimeline = useCampaignStore((s) => s.approveTimeline);
   const adminVendors = useAdminStore((s) => s.vendors);
+  const adminPodTemplates = useAdminStore((s) => s.podTemplates);
+  const templateSteps = adminPodTemplates[sku];
 
   const [stepIndex, setStepIndex] = useState(0);
   const prefilledRef = useRef(false);
@@ -62,16 +64,16 @@ export default function BuildWizardPage() {
   }, [brand]);
 
   const suggestedPod = useMemo(
-    () => (ct ? buildAutoPod(sku, config?.audienceSize ?? 0) : []),
-    [ct, sku, config?.audienceSize]
+    () => (ct ? buildAutoPod(sku, config?.audienceSize ?? 0, templateSteps) : []),
+    [ct, sku, config?.audienceSize, templateSteps]
   );
   const pod = useMemo(
     () => applyPodOverrides(suggestedPod, config?.podOverrides ?? {}),
     [suggestedPod, config?.podOverrides]
   );
   const sprintBreakdown = useMemo(
-    () => (ct ? buildSprintBreakdown(sku, config?.sprints ?? 1) : null),
-    [ct, sku, config?.sprints]
+    () => (ct ? buildSprintBreakdown(sku, config?.sprints ?? 1, templateSteps) : null),
+    [ct, sku, config?.sprints, templateSteps]
   );
 
   const vendorLines = useMemo(

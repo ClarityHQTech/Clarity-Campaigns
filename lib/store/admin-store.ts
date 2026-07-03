@@ -4,6 +4,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CORE_POD_ROSTER, RETAINER_ROSTER, VENDOR_ROSTER } from "../data/talent-vendor-roster";
 import { SkuId } from "../data/campaign-types";
+import { PROCS } from "../data/procs";
+import { ROLE_LIBRARY } from "../data/role-library";
 
 export interface Freelancer {
   id: string;
@@ -23,6 +25,18 @@ export interface AdminVendor {
   price: number | null; // per project; null = TBD
   currency: "USD" | "INR";
   skuScope: SkuId[]; // [] = applies to every campaign type
+}
+
+export interface PodTemplateStep {
+  id: string;
+  stepNumber: number;
+  title: string;
+  role: string;
+  hours: number; // base hours for this step (not audience-scaled)
+  rate: number;  // $/hr
+  days: number;  // calendar days allocated
+  deliverable: string;
+  active: boolean; // inactive steps are excluded from pod, timeline, and bidding
 }
 
 // Seed freelancers — one named person per core role, so the admin panel and pod
@@ -73,15 +87,42 @@ function buildSeedVendors(): AdminVendor[] {
   return [...vendorRows, ...retainerRows];
 }
 
+function rateFromLibrary(roleName: string): number {
+  return ROLE_LIBRARY.find((r) => r.name === roleName)?.rate ?? 25;
+}
+
+function buildSeedPodTemplates(): Record<SkuId, PodTemplateStep[]> {
+  const result: Partial<Record<SkuId, PodTemplateStep[]>> = {};
+  for (const [sku, steps] of Object.entries(PROCS)) {
+    result[sku as SkuId] = steps.map((step) => ({
+      id: `tpl-${sku}-${step.n}`,
+      stepNumber: step.n,
+      title: step.t,
+      role: step.role,
+      hours: step.baseHrs,
+      rate: rateFromLibrary(step.role),
+      days: step.days,
+      deliverable: step.out,
+      active: true,
+    }));
+  }
+  return result as Record<SkuId, PodTemplateStep[]>;
+}
+
 interface AdminStoreState {
   freelancers: Freelancer[];
   vendors: AdminVendor[];
+  podTemplates: Record<SkuId, PodTemplateStep[]>;
   addFreelancer: () => void;
   updateFreelancer: (id: string, partial: Partial<Omit<Freelancer, "id">>) => void;
   removeFreelancer: (id: string) => void;
   addVendor: () => void;
   updateVendor: (id: string, partial: Partial<Omit<AdminVendor, "id">>) => void;
   removeVendor: (id: string) => void;
+  addTemplateStep: (sku: SkuId) => void;
+  updateTemplateStep: (sku: SkuId, id: string, partial: Partial<Omit<PodTemplateStep, "id">>) => void;
+  removeTemplateStep: (sku: SkuId, id: string) => void;
+  toggleTemplateStep: (sku: SkuId, id: string) => void;
 }
 
 function newId(prefix: string): string {
@@ -93,6 +134,7 @@ export const useAdminStore = create<AdminStoreState>()(
     (set) => ({
       freelancers: buildSeedFreelancers(),
       vendors: buildSeedVendors(),
+      podTemplates: buildSeedPodTemplates(),
       addFreelancer: () =>
         set((state) => ({
           freelancers: [
@@ -116,6 +158,50 @@ export const useAdminStore = create<AdminStoreState>()(
       updateVendor: (id, partial) =>
         set((state) => ({ vendors: state.vendors.map((v) => (v.id === id ? { ...v, ...partial } : v)) })),
       removeVendor: (id) => set((state) => ({ vendors: state.vendors.filter((v) => v.id !== id) })),
+      addTemplateStep: (sku) =>
+        set((state) => {
+          const existing = state.podTemplates[sku] ?? [];
+          const maxNum = existing.reduce((m, s) => Math.max(m, s.stepNumber), 0);
+          const newStep: PodTemplateStep = {
+            id: newId("tpl"),
+            stepNumber: maxNum + 1,
+            title: "",
+            role: "",
+            hours: 8,
+            rate: 25,
+            days: 3,
+            deliverable: "",
+            active: true,
+          };
+          return {
+            podTemplates: { ...state.podTemplates, [sku]: [...existing, newStep] },
+          };
+        }),
+      updateTemplateStep: (sku, id, partial) =>
+        set((state) => ({
+          podTemplates: {
+            ...state.podTemplates,
+            [sku]: (state.podTemplates[sku] ?? []).map((s) =>
+              s.id === id ? { ...s, ...partial } : s
+            ),
+          },
+        })),
+      removeTemplateStep: (sku, id) =>
+        set((state) => ({
+          podTemplates: {
+            ...state.podTemplates,
+            [sku]: (state.podTemplates[sku] ?? []).filter((s) => s.id !== id),
+          },
+        })),
+      toggleTemplateStep: (sku, id) =>
+        set((state) => ({
+          podTemplates: {
+            ...state.podTemplates,
+            [sku]: (state.podTemplates[sku] ?? []).map((s) =>
+              s.id === id ? { ...s, active: !s.active } : s
+            ),
+          },
+        })),
     }),
     { name: "clarity-admin-data" }
   )

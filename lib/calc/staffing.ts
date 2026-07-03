@@ -11,6 +11,17 @@ export interface PodRow {
   out: string; // the specific deliverable text for this role's step, from PROCS
 }
 
+// Minimal shape required from admin template steps — avoids importing "use client" admin-store.
+type TemplateStep = {
+  stepNumber: number;
+  title: string;
+  role: string;
+  hours: number;
+  rate: number;
+  deliverable: string;
+  active: boolean;
+};
+
 // Ported from applyAutoStaffing() in the source HTML: scale = audienceSize / 1000,
 // clamped to [0.4, 3]. The source only applies this scale for sales-mode campaigns;
 // this build applies it uniformly across SKUs using each brief's audience size input.
@@ -25,11 +36,22 @@ export function rateForRole(roleName: string): number {
   return role ? role.rate : UNMATCHED_ROLE_FALLBACK_RATE;
 }
 
-// Auto-generates the pod from PROCS[sku], scaled by audience. One row per process
-// step (so each card shows its own specific deliverable, per "out") — the source
-// tool's applyAutoStaffing() merges same-role steps for the cost table, but total
-// cost is identical either way since it's a sum of hours * rate per step.
-export function buildAutoPod(sku: SkuId, audienceSize: number): PodRow[] {
+// When templateSteps are provided (admin-configured), they are used as-is with no
+// audience scaling — the admin sets exact hours per step. Falls back to PROCS-based
+// audience-scaled auto-staffing when no template exists.
+export function buildAutoPod(sku: SkuId, audienceSize: number, templateSteps?: TemplateStep[]): PodRow[] {
+  if (templateSteps && templateSteps.length > 0) {
+    return templateSteps
+      .filter((s) => s.active)
+      .map((s) => ({
+        stepNumber: s.stepNumber,
+        stepTitle: s.title,
+        role: s.role,
+        hours: s.hours,
+        rate: s.rate,
+        out: s.deliverable,
+      }));
+  }
   const steps = PROCS[sku] ?? [];
   const scale = scaleForAudience(audienceSize);
   return steps.map((step) => ({
