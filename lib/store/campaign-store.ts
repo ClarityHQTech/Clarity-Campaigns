@@ -21,6 +21,12 @@ export interface VendorToggleState {
   cost: number | null; // null = TBD/blank
 }
 
+export interface CustomVendorLine {
+  id: string;
+  name: string;
+  cost: number | null; // null = TBD/blank
+}
+
 export interface CampaignConfig {
   // Overview
   client: string;
@@ -46,7 +52,6 @@ export interface CampaignConfig {
   asp: number;
   adSpend: number;
   adSpendCadence: "monthly" | "onetime";
-  adBudgetForReach: number;
   // Delivery
   owner: string;
   weeks: number;
@@ -55,9 +60,12 @@ export interface CampaignConfig {
   risks: string;
   // Vendor toggles, keyed by roster id
   vendorToggles: Record<string, VendorToggleState>;
-  // Pod hours/rate overrides, keyed by PROCS step number. Suggested standards
-  // pre-fill the pod; these overrides are set only when a user edits a value.
-  podOverrides: Record<number, { hours: number; rate: number }>;
+  // Any other vendor/specialist not in the roster — freeform name + cost.
+  customVendors: CustomVendorLine[];
+  // Pod hours/rate/role overrides, keyed by PROCS step number. Suggested
+  // standards pre-fill the pod; these overrides are set only when a user
+  // edits a value (including swapping which role is staffed on a step).
+  podOverrides: Record<number, { role: string; hours: number; rate: number }>;
   // Timeline
   timelineApproved: boolean;
   // Pricing
@@ -105,13 +113,13 @@ function buildDefaultConfig(sku: SkuId): CampaignConfig {
     asp: 2000,
     adSpend: 0,
     adSpendCadence: "monthly",
-    adBudgetForReach: 2000,
     owner: "",
     weeks: 8,
     sprints: 2,
     notes: "",
     risks: "",
     vendorToggles: {},
+    customVendors: [],
     podOverrides: {},
     timelineApproved: false,
     priceMode: "fixed",
@@ -140,8 +148,11 @@ interface CampaignStoreState {
   getConfig: (sku: SkuId) => CampaignConfig;
   updateConfig: (sku: SkuId, partial: Partial<CampaignConfig>) => void;
   setVendorToggle: (sku: SkuId, vendorId: string, state: VendorToggleState) => void;
-  setPodOverride: (sku: SkuId, stepNumber: number, override: { hours: number; rate: number }) => void;
+  setPodOverride: (sku: SkuId, stepNumber: number, override: { role: string; hours: number; rate: number }) => void;
   resetPodOverride: (sku: SkuId, stepNumber: number) => void;
+  addCustomVendor: (sku: SkuId) => void;
+  updateCustomVendor: (sku: SkuId, id: string, partial: Partial<Omit<CustomVendorLine, "id">>) => void;
+  removeCustomVendor: (sku: SkuId, id: string) => void;
   approveTimeline: (sku: SkuId) => void;
   setLastOrder: (order: OrderRecord) => void;
 }
@@ -190,6 +201,40 @@ export const useCampaignStore = create<CampaignStoreState>()(
           const nextOverrides = { ...current.podOverrides };
           delete nextOverrides[stepNumber];
           return { configs: { ...state.configs, [sku]: { ...current, podOverrides: nextOverrides } } };
+        }),
+      addCustomVendor: (sku) =>
+        set((state) => {
+          const current = state.configs[sku] ?? defaultConfig(sku);
+          const id = `custom-${Date.now()}-${Math.round(Math.random() * 1000)}`;
+          return {
+            configs: {
+              ...state.configs,
+              [sku]: { ...current, customVendors: [...current.customVendors, { id, name: "", cost: null }] },
+            },
+          };
+        }),
+      updateCustomVendor: (sku, id, partial) =>
+        set((state) => {
+          const current = state.configs[sku] ?? defaultConfig(sku);
+          return {
+            configs: {
+              ...state.configs,
+              [sku]: {
+                ...current,
+                customVendors: current.customVendors.map((v) => (v.id === id ? { ...v, ...partial } : v)),
+              },
+            },
+          };
+        }),
+      removeCustomVendor: (sku, id) =>
+        set((state) => {
+          const current = state.configs[sku] ?? defaultConfig(sku);
+          return {
+            configs: {
+              ...state.configs,
+              [sku]: { ...current, customVendors: current.customVendors.filter((v) => v.id !== id) },
+            },
+          };
         }),
       approveTimeline: (sku) =>
         set((state) => {

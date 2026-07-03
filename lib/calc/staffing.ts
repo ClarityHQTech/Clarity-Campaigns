@@ -47,18 +47,20 @@ export function podCost(pod: PodRow[]): number {
 }
 
 export interface PodOverride {
+  role: string;
   hours: number;
   rate: number;
 }
 
-// Pod hours/rate are togglable — each row suggests the standard (PROCS baseHrs
-// scaled by audience, ROLE_LIBRARY rate) but a user override takes precedence.
+// Pod role/hours/rate are togglable — each row suggests the standard (PROCS
+// role + baseHrs scaled by audience, ROLE_LIBRARY rate) but a user override
+// takes precedence, including swapping which role is staffed on a step.
 export function applyPodOverrides(
   suggestedPod: PodRow[],
   overrides: Record<number, PodOverride>
 ): PodRow[] {
   return suggestedPod.map((row) => {
     const override = overrides[row.stepNumber];
-    return override ? { ...row, hours: override.hours, rate: override.rate } : row;
+    return override ? { ...row, role: override.role, hours: override.hours, rate: override.rate } : row;
   });
 }

@@ -56,3 +56,6 @@ export const CHANNEL_BENCH: Record<string, ChannelBenchEntry> = {
   WhatsApp: { paid: false },
   "SEO / AEO": { paid: false },
 };
+
+// Every channel available to select in a brief, regardless of campaign type.
+export const ALL_CHANNELS: string[] = Object.keys(CHANNEL_BENCH);
