@@ -14,7 +14,10 @@ export function SiteHeader() {
         <span className="font-mono text-[10.5px] px-2 py-1 rounded-[3px] bg-primary/10 border border-primary/30 text-primary">
           Campaign Marketplace
         </span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-3">
+          <Link href="/admin" className="font-mono text-[10.5px] text-muted-foreground hover:text-foreground">
+            Admin
+          </Link>
           <TalkToUsCta />
         </div>
       </div>
