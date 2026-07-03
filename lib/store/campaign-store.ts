@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { SkuId, CAMPAIGN_TYPES } from "../data/campaign-types";
 import type { OutcomeMetric, PriceMode } from "../calc/pricing";
+import { industryFunnelBenchmark } from "../calc/reach";
 
 export interface BrandContext {
   brandBookName: string;
@@ -54,6 +55,9 @@ export interface CampaignConfig {
   risks: string;
   // Vendor toggles, keyed by roster id
   vendorToggles: Record<string, VendorToggleState>;
+  // Pod hours/rate overrides, keyed by PROCS step number. Suggested standards
+  // pre-fill the pod; these overrides are set only when a user edits a value.
+  podOverrides: Record<number, { hours: number; rate: number }>;
   // Timeline
   timelineApproved: boolean;
   // Pricing
@@ -79,6 +83,7 @@ function defaultConfig(sku: SkuId): CampaignConfig {
 
 function buildDefaultConfig(sku: SkuId): CampaignConfig {
   const ct = CAMPAIGN_TYPES[sku];
+  const benchmark = industryFunnelBenchmark("d2c", ct.channels);
   return {
     client: "",
     name: "",
@@ -94,9 +99,9 @@ function buildDefaultConfig(sku: SkuId): CampaignConfig {
     emailSteps: 4,
     liSteps: 2,
     waSteps: 2,
-    qualifiedPct: 5,
-    opportunityPct: 25,
-    closePct: 20,
+    qualifiedPct: benchmark.qualifiedPct,
+    opportunityPct: benchmark.opportunityPct,
+    closePct: benchmark.closePct,
     asp: 2000,
     adSpend: 0,
     adSpendCadence: "monthly",
@@ -107,6 +112,7 @@ function buildDefaultConfig(sku: SkuId): CampaignConfig {
     notes: "",
     risks: "",
     vendorToggles: {},
+    podOverrides: {},
     timelineApproved: false,
     priceMode: "fixed",
     outcomeMetric: "opportunity",
@@ -134,6 +140,8 @@ interface CampaignStoreState {
   getConfig: (sku: SkuId) => CampaignConfig;
   updateConfig: (sku: SkuId, partial: Partial<CampaignConfig>) => void;
   setVendorToggle: (sku: SkuId, vendorId: string, state: VendorToggleState) => void;
+  setPodOverride: (sku: SkuId, stepNumber: number, override: { hours: number; rate: number }) => void;
+  resetPodOverride: (sku: SkuId, stepNumber: number) => void;
   approveTimeline: (sku: SkuId) => void;
   setLastOrder: (order: OrderRecord) => void;
 }
@@ -165,6 +173,23 @@ export const useCampaignStore = create<CampaignStoreState>()(
               },
             },
           };
+        }),
+      setPodOverride: (sku, stepNumber, override) =>
+        set((state) => {
+          const current = state.configs[sku] ?? defaultConfig(sku);
+          return {
+            configs: {
+              ...state.configs,
+              [sku]: { ...current, podOverrides: { ...current.podOverrides, [stepNumber]: override } },
+            },
+          };
+        }),
+      resetPodOverride: (sku, stepNumber) =>
+        set((state) => {
+          const current = state.configs[sku] ?? defaultConfig(sku);
+          const nextOverrides = { ...current.podOverrides };
+          delete nextOverrides[stepNumber];
+          return { configs: { ...state.configs, [sku]: { ...current, podOverrides: nextOverrides } } };
         }),
       approveTimeline: (sku) =>
         set((state) => {

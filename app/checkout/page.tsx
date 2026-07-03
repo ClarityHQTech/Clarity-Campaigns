@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CAMPAIGN_TYPES, SkuId } from "@/lib/data/campaign-types";
 import { useCampaignStore } from "@/lib/store/campaign-store";
-import { buildAutoPod } from "@/lib/calc/staffing";
+import { buildAutoPod, applyPodOverrides } from "@/lib/calc/staffing";
 import { buildSprintBreakdown } from "@/lib/calc/sprint";
 import { computePricing, outcomeTargetFor } from "@/lib/calc/pricing";
 import { vendorLinesFor } from "@/components/pricing-summary";
@@ -31,7 +31,11 @@ function CheckoutContent() {
   const [paying, setPaying] = useState(false);
   const [paid, setPaid] = useState(false);
 
-  const pod = useMemo(() => (sku ? buildAutoPod(sku, config?.audienceSize ?? 0) : []), [sku, config?.audienceSize]);
+  const pod = useMemo(() => {
+    if (!sku) return [];
+    const suggested = buildAutoPod(sku, config?.audienceSize ?? 0);
+    return applyPodOverrides(suggested, config?.podOverrides ?? {});
+  }, [sku, config?.audienceSize, config?.podOverrides]);
   const sprintBreakdown = useMemo(() => (sku ? buildSprintBreakdown(sku, config?.sprints ?? 1) : null), [sku, config?.sprints]);
 
   if (!ct || !config || !sku) {

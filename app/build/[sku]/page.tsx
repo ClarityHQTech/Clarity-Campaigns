@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CAMPAIGN_TYPES, SkuId } from "@/lib/data/campaign-types";
 import { useCampaignStore } from "@/lib/store/campaign-store";
-import { buildAutoPod } from "@/lib/calc/staffing";
+import { buildAutoPod, applyPodOverrides } from "@/lib/calc/staffing";
 import { buildSprintBreakdown } from "@/lib/calc/sprint";
 import { StepIndicator } from "@/components/step-indicator";
 import { BriefForm } from "@/components/brief-form";
@@ -35,6 +35,8 @@ export default function BuildWizardPage() {
   const config = useCampaignStore((s) => (ct ? s.getConfig(sku) : null));
   const updateConfig = useCampaignStore((s) => s.updateConfig);
   const setVendorToggle = useCampaignStore((s) => s.setVendorToggle);
+  const setPodOverride = useCampaignStore((s) => s.setPodOverride);
+  const resetPodOverride = useCampaignStore((s) => s.resetPodOverride);
   const approveTimeline = useCampaignStore((s) => s.approveTimeline);
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -48,7 +50,14 @@ export default function BuildWizardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brand]);
 
-  const pod = useMemo(() => (ct ? buildAutoPod(sku, config?.audienceSize ?? 0) : []), [ct, sku, config?.audienceSize]);
+  const suggestedPod = useMemo(
+    () => (ct ? buildAutoPod(sku, config?.audienceSize ?? 0) : []),
+    [ct, sku, config?.audienceSize]
+  );
+  const pod = useMemo(
+    () => applyPodOverrides(suggestedPod, config?.podOverrides ?? {}),
+    [suggestedPod, config?.podOverrides]
+  );
   const sprintBreakdown = useMemo(
     () => (ct ? buildSprintBreakdown(sku, config?.sprints ?? 1) : null),
     [ct, sku, config?.sprints]
@@ -89,7 +98,12 @@ export default function BuildWizardPage() {
 
         {stepIndex === 1 && (
           <div className="flex flex-col gap-6">
-            <PodDisplay pod={pod} />
+            <PodDisplay
+              pod={pod}
+              suggested={suggestedPod}
+              onChange={(stepNumber, override) => setPodOverride(sku, stepNumber, override)}
+              onReset={(stepNumber) => resetPodOverride(sku, stepNumber)}
+            />
             <VendorTogglePanel
               assetTypes={assetTypes}
               vendorToggles={config.vendorToggles}
