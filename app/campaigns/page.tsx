@@ -116,7 +116,7 @@ export default function CampaignsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <CampaignStatusBadge status={c.status} />
-                        <span className="font-mono text-[9.5px] text-muted-foreground-2 px-1.5 py-0.5 rounded-[2px] bg-muted border border-border">
+                        <span className="font-mono text-[9.5px] text-primary px-1.5 py-0.5 rounded-[2px] bg-primary/10 border border-primary/25">
                           {ct.label}
                         </span>
                       </div>

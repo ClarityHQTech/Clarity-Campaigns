@@ -30,7 +30,7 @@ export function StepIndicator({ steps, activeIndex }: { steps: WizardStep[]; act
           </div>
           <div
             className={cn(
-              "font-mono text-[9px]",
+              "text-[9.5px] font-medium tracking-wide",
               i <= activeIndex ? "text-foreground" : "text-muted-foreground"
             )}
           >

@@ -1,27 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf8f3;
-  --foreground: #1b2129;
-  --card: #ffffff;
-  --card-foreground: #1b2129;
-  --border: #e6e0d2;
-  --border-strong: #d5cfc0;
-  --paper: #f4f0e7;
-  --paper-border: #d5cfc0;
-  --paper-foreground: #1b2129;
-  --muted: #f0ecdf;
-  --muted-foreground: #6a7280;
-  --muted-foreground-2: #8a8578;
-  --primary: #e9941a;
-  --primary-hover: #c97d0f;
-  --primary-foreground: #0e141b;
-  --secondary: #4d9685;
-  --secondary-foreground: #ffffff;
-  --destructive: #c2513a;
+  /* page chrome — deep charcoal */
+  --background: #141922;
+  --foreground: #e8e4dc;
+  /* dark card surfaces */
+  --card: #1e2738;
+  --card-foreground: #e8e4dc;
+  /* borders on dark surfaces */
+  --border: #2c3a50;
+  --border-strong: #3d5068;
+  /* cream paper — used for form sections and content cards */
+  --paper: #faf7f0;
+  --paper-border: #dbd3c4;
+  --paper-foreground: #141922;
+  /* dark muted surfaces */
+  --muted: #1e2a3d;
+  --muted-foreground: #8a9cb5;
+  --muted-foreground-2: #6a7d96;
+  /* amber primary — pops clearly on dark charcoal */
+  --primary: #f49930;
+  --primary-hover: #dc8018;
+  --primary-foreground: #0e1116;
+  /* teal secondary */
+  --secondary: #28c4a8;
+  --secondary-foreground: #0e1116;
+  /* destructive */
+  --destructive: #e54a3b;
   --destructive-foreground: #ffffff;
-  --ring: #e9941a;
-  --radius: 0.375rem;
+  --ring: #f49930;
+  --radius: 0.5rem;
 }
 
 @theme inline {

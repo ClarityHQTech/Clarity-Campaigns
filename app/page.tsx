@@ -99,7 +99,7 @@ export default function MarketplacePage() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {PROCESS_STEPS.map((step, i) => (
-            <div key={step.title} className="rounded-[4px] border border-border bg-card p-4">
+            <div key={step.title} className="rounded-[var(--radius)] border border-border bg-card p-4">
               <div className="mb-3 flex items-center gap-2">
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/10 text-primary">
                   <step.Icon size={15} strokeWidth={1.75} />

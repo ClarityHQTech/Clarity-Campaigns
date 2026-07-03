@@ -28,7 +28,7 @@ export function SkuCard({ ct }: { ct: CampaignType }) {
           <div className="font-mono-label text-[9px] text-muted-foreground-2 mb-1">Works well for</div>
           <div className="flex flex-wrap gap-1 mb-1.5">
             {ct.bestFitIndustries.map((id) => (
-              <span key={id} className="font-mono text-[9.5px] px-1.5 py-0.5 rounded-[2px] bg-card border border-border text-foreground">
+              <span key={id} className="font-mono text-[9.5px] px-1.5 py-0.5 rounded-[2px] bg-paper border border-paper-border text-paper-foreground">
                 {IND[id].name}
               </span>
             ))}
