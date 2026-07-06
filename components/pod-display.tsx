@@ -48,6 +48,7 @@ export function PodDisplay({
 }) {
   const freelancers = useAdminStore((s) => s.freelancers);
   const [customNames, setCustomNames] = useState<Record<number, string>>({});
+  const [fromStepSelections, setFromStepSelections] = useState<Record<string, string>>({});
 
   // Template rows only (no extraId) — extra rows rendered separately
   const templateRows = pod.filter((r) => !r.extraId);
@@ -193,76 +194,130 @@ export function PodDisplay({
         })}
 
         {/* Extra steps added by user */}
-        {(podExtraSteps ?? []).map((extra) => (
-          <Card key={extra.id} className="bg-paper border-paper-border border-dashed">
-            <CardContent className="pt-4 pb-4 text-paper-foreground">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="font-mono text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">Custom</span>
-                <span className="flex-1 font-heading text-[13px] font-semibold">
-                  {extra.stepTitle || <span className="text-muted-foreground italic">Untitled step</span>}
-                </span>
-                {onRemoveExtraStep && (
-                  <button
-                    type="button"
-                    onClick={() => onRemoveExtraStep(extra.id)}
-                    className="text-[10.5px] font-mono text-muted-foreground hover:text-destructive transition-colors"
-                  >
-                    Remove
-                  </button>
+        {(podExtraSteps ?? []).map((extra) => {
+          const roleInLibrary = ROLE_LIBRARY.some((r) => r.name === extra.role);
+          const extraRoleOptions = roleInLibrary || !extra.role
+            ? ROLE_LIBRARY
+            : [{ name: extra.role, dept: "Marketing" as const, level: "Custom", rate: extra.rate }, ...ROLE_LIBRARY];
+          const selectedFromStep = fromStepSelections[extra.id] ?? "";
+
+          return (
+            <Card key={extra.id} className="bg-paper border-paper-border border-dashed">
+              <CardContent className="pt-4 pb-4 text-paper-foreground">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">Custom</span>
+                  <span className="flex-1 font-heading text-[13px] font-semibold">
+                    {extra.stepTitle || <span className="text-muted-foreground italic">Untitled step</span>}
+                  </span>
+                  {onRemoveExtraStep && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveExtraStep(extra.id)}
+                      className="text-[10.5px] font-mono text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                {/* Role picker — auto-fills rate from ROLE_LIBRARY */}
+                <div className="mb-3 flex flex-wrap items-end gap-3">
+                  <div className="w-64">
+                    <Label className="mb-0.5">Role</Label>
+                    <Select
+                      value={extra.role || "__none__"}
+                      onValueChange={(v) => {
+                        if (v === "__none__") {
+                          onUpdateExtraStep?.(extra.id, { role: "" });
+                        } else {
+                          const lib = ROLE_LIBRARY.find((r) => r.name === v);
+                          onUpdateExtraStep?.(extra.id, { role: v, ...(lib ? { rate: lib.rate } : {}) });
+                        }
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select role…" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select role…</SelectItem>
+                        {extraRoleOptions.map((r) => (
+                          <SelectItem key={r.name} value={r.name}>
+                            {r.name} — ${r.rate}/hr
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-24">
+                    <Label className="mb-0.5">Hours</Label>
+                    <Input
+                      type="number"
+                      value={extra.hours}
+                      onChange={(e) => onUpdateExtraStep?.(extra.id, { hours: Number(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div className="w-24">
+                    <Label className="mb-0.5">Rate ($/hr)</Label>
+                    <Input
+                      type="number"
+                      value={extra.rate}
+                      onChange={(e) => onUpdateExtraStep?.(extra.id, { rate: Number(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div className="font-mono text-[11px] text-muted-foreground pb-2">
+                    = {fmtMoney(extra.hours * extra.rate)}
+                  </div>
+                </div>
+
+                {/* Optional: pick a process step to auto-fill title + deliverable + hours */}
+                {templateRows.length > 0 && (
+                  <div className="mb-3">
+                    <Label className="mb-0.5">From process step (optional — auto-fills title &amp; deliverable)</Label>
+                    <Select
+                      value={selectedFromStep || "__none__"}
+                      onValueChange={(v) => {
+                        setFromStepSelections((prev) => ({ ...prev, [extra.id]: v }));
+                        if (v && v !== "__none__") {
+                          const row = templateRows.find((r) => String(r.stepNumber) === v);
+                          if (row) {
+                            onUpdateExtraStep?.(extra.id, { stepTitle: row.stepTitle, out: row.out, hours: row.hours });
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="None — enter manually" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None — enter manually</SelectItem>
+                        {templateRows.map((r) => (
+                          <SelectItem key={r.stepNumber} value={String(r.stepNumber)}>
+                            {r.stepNumber}. {r.stepTitle}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
-              </div>
-              <div className="flex flex-wrap items-end gap-3 mb-2">
-                <div className="flex-1 min-w-[160px]">
-                  <Label className="mb-0.5">Step title</Label>
-                  <Input
-                    value={extra.stepTitle}
-                    placeholder="e.g. Brand Strategy Workshop"
-                    onChange={(e) => onUpdateExtraStep?.(extra.id, { stepTitle: e.target.value })}
-                  />
+
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="flex-1 min-w-[200px]">
+                    <Label className="mb-0.5">Step title</Label>
+                    <Input
+                      value={extra.stepTitle}
+                      placeholder="e.g. Brand Strategy Workshop"
+                      onChange={(e) => onUpdateExtraStep?.(extra.id, { stepTitle: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <Label className="mb-0.5">Deliverable note</Label>
+                    <Input
+                      value={extra.out}
+                      placeholder="What this step produces"
+                      onChange={(e) => onUpdateExtraStep?.(extra.id, { out: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className="w-44">
-                  <Label className="mb-0.5">Role</Label>
-                  <Input
-                    list="role-options-extra"
-                    value={extra.role}
-                    placeholder="Role"
-                    onChange={(e) => onUpdateExtraStep?.(extra.id, { role: e.target.value })}
-                  />
-                  <datalist id="role-options-extra">
-                    {ROLE_LIBRARY.map((r) => <option key={r.name} value={r.name} />)}
-                  </datalist>
-                </div>
-                <div className="w-24">
-                  <Label className="mb-0.5">Hours</Label>
-                  <Input
-                    type="number"
-                    value={extra.hours}
-                    onChange={(e) => onUpdateExtraStep?.(extra.id, { hours: Number(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="w-24">
-                  <Label className="mb-0.5">Rate ($/hr)</Label>
-                  <Input
-                    type="number"
-                    value={extra.rate}
-                    onChange={(e) => onUpdateExtraStep?.(extra.id, { rate: Number(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="font-mono text-[11px] text-muted-foreground pb-2">
-                  = {fmtMoney(extra.hours * extra.rate)}
-                </div>
-              </div>
-              <div>
-                <Label className="mb-0.5">Deliverable note</Label>
-                <Input
-                  value={extra.out}
-                  placeholder="What this step produces"
-                  onChange={(e) => onUpdateExtraStep?.(extra.id, { out: e.target.value })}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Add step + totals */}

@@ -213,7 +213,7 @@ interface CampaignStoreState {
   approveTimeline: (id: string) => void;
   excludePodStep: (id: string, stepNumber: number) => void;
   includePodStep: (id: string, stepNumber: number) => void;
-  addPodExtraStep: (id: string) => void;
+  addPodExtraStep: (id: string, initial?: Partial<Omit<ExtraPodStep, "id">>) => void;
   updatePodExtraStep: (id: string, extraId: string, partial: Partial<Omit<ExtraPodStep, "id">>) => void;
   removePodExtraStep: (id: string, extraId: string) => void;
   approveCosts: (id: string) => void;
@@ -394,12 +394,12 @@ export const useCampaignStore = create<CampaignStoreState>()(
           })),
         })),
 
-      addPodExtraStep: (id) =>
+      addPodExtraStep: (id, initial) =>
         set((s) => ({
           campaigns: withConfig(s.campaigns, id, (c) => ({
             podExtraSteps: [
               ...(c.podExtraSteps ?? []),
-              { id: `extra-${Date.now()}-${Math.round(Math.random() * 1000)}`, stepTitle: "", role: "", hours: 8, rate: 25, out: "" },
+              { id: `extra-${Date.now()}-${Math.round(Math.random() * 1000)}`, stepTitle: "", role: "", hours: 8, rate: 25, out: "", ...initial },
             ],
           })),
         })),

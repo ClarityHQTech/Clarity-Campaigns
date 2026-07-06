@@ -139,8 +139,11 @@ export default function BuildWizardPage() {
     [suggestedPodFiltered, config?.podOverrides, extraPodRows]
   );
   const sprintBreakdown = useMemo(
-    () => (ct && sku ? buildSprintBreakdown(sku, config?.sprints ?? 1, templateSteps) : null),
-    [ct, sku, config?.sprints, templateSteps]
+    () =>
+      ct && sku
+        ? buildSprintBreakdown(sku, config?.sprints ?? 1, templateSteps, config?.weeks || undefined)
+        : null,
+    [ct, sku, config?.sprints, templateSteps, config?.weeks]
   );
 
   const vendorLines = useMemo(

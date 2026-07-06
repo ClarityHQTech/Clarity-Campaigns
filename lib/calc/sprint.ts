@@ -33,14 +33,39 @@ type NormStep = { n: number; t: string; role: string; days: number };
 
 // Ported from buildSprintBreakdown() / sprintHtml() in the source HTML.
 // When templateSteps are provided, their active steps replace PROCS as the source of truth.
-export function buildSprintBreakdown(sku: SkuId, sprintCountInput: number, templateSteps?: TemplateStep[]): SprintBreakdown {
-  let steps: NormStep[];
+// weeksOverride: when provided, each step's days are scaled proportionally to fill exactly
+// weeksOverride × 7 calendar days — so the timeline always matches the user's set weeks.
+export function buildSprintBreakdown(
+  sku: SkuId,
+  sprintCountInput: number,
+  templateSteps?: TemplateStep[],
+  weeksOverride?: number,
+): SprintBreakdown {
+  let baseSteps: NormStep[];
   if (templateSteps && templateSteps.length > 0) {
-    steps = templateSteps
+    baseSteps = templateSteps
       .filter((s) => s.active)
       .map((s) => ({ n: s.stepNumber, t: s.title, role: s.role, days: s.days }));
   } else {
-    steps = (PROCS[sku] ?? []).map((s) => ({ n: s.n, t: s.t, role: s.role, days: s.days }));
+    baseSteps = (PROCS[sku] ?? []).map((s) => ({ n: s.n, t: s.t, role: s.role, days: s.days }));
+  }
+
+  const procsDays = baseSteps.reduce((sum, s) => sum + s.days, 0);
+  const targetDays = weeksOverride && weeksOverride > 0 ? weeksOverride * 7 : procsDays;
+
+  // Scale each step's days proportionally to fill targetDays
+  let steps: NormStep[];
+  if (procsDays > 0 && targetDays !== procsDays) {
+    const ratio = targetDays / procsDays;
+    let allocated = 0;
+    steps = baseSteps.map((s, i) => {
+      const isLast = i === baseSteps.length - 1;
+      const scaled = isLast ? targetDays - allocated : Math.max(1, Math.round(s.days * ratio));
+      allocated += scaled;
+      return { ...s, days: scaled };
+    });
+  } else {
+    steps = baseSteps;
   }
 
   const totalDays = steps.reduce((sum, s) => sum + s.days, 0);
@@ -64,7 +89,7 @@ export function buildSprintBreakdown(sku: SkuId, sprintCountInput: number, templ
     const rows: SprintDay[] = sp.steps.map((st) => {
       const startDay = dayCursor + 1;
       dayCursor += st.days;
-      const rangeLabel = st.days > 1 ? `Day ${startDay}-${dayCursor}` : `Day ${startDay}`;
+      const rangeLabel = st.days > 1 ? `Day ${startDay}–${dayCursor}` : `Day ${startDay}`;
       return { rangeLabel, stepTitle: st.t, role: st.role };
     });
     return { n: sp.n, days: sp.days, rows };
@@ -74,6 +99,6 @@ export function buildSprintBreakdown(sku: SkuId, sprintCountInput: number, templ
     sprints: renderedSprints,
     totalDays,
     daysPerSprint,
-    approxWeeks: Math.ceil(totalDays / 7),
+    approxWeeks: weeksOverride ?? Math.ceil(procsDays / 7),
   };
 }
