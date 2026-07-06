@@ -10,6 +10,7 @@ import { buildSprintBreakdown } from "@/lib/calc/sprint";
 import { computePricing, outcomeTargetFor } from "@/lib/calc/pricing";
 import { buildBriefHtml, buildProposalHtml, downloadHtmlFile } from "@/lib/export/html-export";
 import { StepIndicator } from "@/components/step-indicator";
+import { BriefImport } from "@/components/brief-import";
 import { BriefForm } from "@/components/brief-form";
 import { PodDisplay } from "@/components/pod-display";
 import { VendorTogglePanel } from "@/components/vendor-toggle-panel";
@@ -202,7 +203,10 @@ export default function BuildWizardPage() {
 
       <div className="mb-8">
         {stepIndex === 0 && (
-          <BriefForm ct={ct} config={cfg} onChange={(p) => updateConfig(campaignId, p)} />
+          <div className="flex flex-col gap-3">
+            <BriefImport sku={sku} onFill={(p) => updateConfig(campaignId, p)} />
+            <BriefForm ct={ct} config={cfg} onChange={(p) => updateConfig(campaignId, p)} />
+          </div>
         )}
 
         {stepIndex === 1 && (
