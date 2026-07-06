@@ -111,7 +111,7 @@ export function PricingSummary({
 
   return (
     <div>
-      {/* Pricing mode toggle + per-campaign markup override */}
+      {/* Pricing mode toggle */}
       <div className="mb-4 flex gap-2">
         {(["fixed", "hybrid"] as PriceMode[]).map((mode) => (
           <button
@@ -129,32 +129,6 @@ export function PricingSummary({
               : `Fixed + Variable (${markupHybrid}× base)`}
           </button>
         ))}
-      </div>
-      <div className="mb-4 flex items-end gap-3">
-        <div className="w-36">
-          <Label className="text-[11px]">
-            {config.priceMode === "fixed" ? "Fixed markup" : "Base markup"} override
-          </Label>
-          <Input
-            type="number"
-            step={0.5}
-            min={1}
-            max={20}
-            placeholder={String(config.priceMode === "fixed" ? adminMarkupFixed : adminMarkupHybrid)}
-            value={config.priceMode === "fixed"
-              ? (config.markupFixedOverride ?? "")
-              : (config.markupHybridOverride ?? "")}
-            onChange={(e) => {
-              const v = e.target.value === "" ? null : Number(e.target.value);
-              onChange(config.priceMode === "fixed"
-                ? { markupFixedOverride: v }
-                : { markupHybridOverride: v });
-            }}
-          />
-        </div>
-        <p className="text-[11px] text-muted-foreground pb-1.5">
-          Leave blank to use admin default ({config.priceMode === "fixed" ? adminMarkupFixed : adminMarkupHybrid}×)
-        </p>
       </div>
 
       {/* Hybrid variable payout config */}
@@ -253,119 +227,162 @@ export function PricingSummary({
       )}
 
       <div className="flex flex-col gap-3">
+        {/* Step 1: Cost basis */}
         <Card>
           <CardContent className="pt-4 pb-3">
-            <div className="font-mono-label text-[9px] text-muted-foreground mb-2 flex items-center">
-              Human cost (pod)
-              <HelpTooltip>Total hours × hourly rate for each pod role. This cost is subject to the {pricing.multiple}× margin multiple.</HelpTooltip>
-            </div>
-            <table className="w-full text-[12.5px]">
-              <tbody>
-                <tr className="border-b border-border">
-                  <td className="py-1.5 text-muted-foreground">People / HR cost</td>
-                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.podCost)}</td>
-                </tr>
-                <tr>
-                  <td className="py-1 text-[11px] text-muted-foreground-2">After {pricing.multiple}× multiple</td>
-                  <td className="py-1 text-right font-mono text-[11px] text-muted-foreground-2">{fmtMoney(pricing.podCost * pricing.multiple)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Production &amp; tech</div>
-            <table className="w-full text-[12.5px]">
-              <tbody>
-                <tr className="border-b border-border">
-                  <td className="py-1.5 text-muted-foreground">Asset cost</td>
-                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.assetCost)}</td>
-                </tr>
-                <tr className="border-b border-border">
-                  <td className="py-1.5 text-muted-foreground">
-                    Tech cost {sku !== "abm" && <span className="text-[10px]">(not modelled for this SKU)</span>}
-                  </td>
-                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.techCost)}</td>
-                </tr>
-                <tr>
-                  <td className="py-1 text-[11px] text-muted-foreground-2">After {pricing.multiple}× multiple</td>
-                  <td className="py-1 text-right font-mono text-[11px] text-muted-foreground-2">{fmtMoney((pricing.assetCost + pricing.techCost) * pricing.multiple)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Client price</div>
-            <table className="w-full text-[12.5px]">
-              <tbody>
-                {config.priceMode === "fixed" ? (
-                  <tr className="border-b border-border">
-                    <td className="py-1.5 text-muted-foreground">Total cost × {markupFixed}</td>
-                    <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.fixedComponent)}</td>
-                  </tr>
-                ) : (
-                  <>
-                    <tr className="border-b border-border">
-                      <td className="py-1.5 text-muted-foreground">Total cost × {markupHybrid} (fixed)</td>
-                      <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.fixedComponent)}</td>
-                    </tr>
-                    <tr className="border-b border-border">
-                      <td className="py-1.5 text-muted-foreground">
-                        Variable at target ({outcomeTarget} × {fmtMoney(config.outcomeRate)}/{metricLabel})
-                      </td>
-                      <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.baselineVariable)}</td>
-                    </tr>
-                  </>
-                )}
-                <tr className="border-t-2 border-primary font-semibold text-primary">
-                  <td className="py-2">Client price ({config.priceMode})</td>
-                  <td className="py-2 text-right font-mono">{fmtMoney(pricing.totalPrice)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-4 pb-3">
-            <div className="font-mono-label text-[9px] text-muted-foreground mb-2 flex items-center">
-              At-cost — separate from price multiple
-              <HelpTooltip>Ad spend, influencer fees, and vendor costs are passed through at cost — they are never marked up and are invoiced separately from the agency fee.</HelpTooltip>
-            </div>
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Cost basis</div>
             <table className="w-full text-[12.5px]">
               <tbody>
                 <tr className="border-b border-dashed border-border">
-                  <td className="py-1.5 text-muted-foreground">Ad spend ({config.adSpendCadence})</td>
-                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.adSpend)}</td>
+                  <td className="py-1.5 text-muted-foreground">People (freelancer pod)</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.podCost)}</td>
                 </tr>
+                {pricing.assetCost > 0 && (
+                  <tr className="border-b border-dashed border-border">
+                    <td className="py-1.5 text-muted-foreground">Content assets</td>
+                    <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.assetCost)}</td>
+                  </tr>
+                )}
+                <tr className="border-b border-dashed border-border">
+                  <td className="py-1.5 text-muted-foreground">
+                    Tech &amp; tools
+                    {sku !== "abm" && pricing.techCost === 0 && (
+                      <span className="text-[10px] ml-1 text-muted-foreground-2">(not modelled for this campaign type)</span>
+                    )}
+                  </td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.techCost)}</td>
+                </tr>
+                <tr className="font-semibold">
+                  <td className="py-2 text-foreground">Total cost basis</td>
+                  <td className="py-2 text-right font-mono text-foreground">{fmtMoney(pricing.totalCost)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* Step 2: ClarityHQ Management Fee */}
+        <Card className="bg-paper border-paper-border">
+          <CardContent className="pt-4 pb-4">
+            <div className="font-mono-label text-[9px] text-primary-hover mb-3 flex items-center">
+              ClarityHQ Management Fee
+              <HelpTooltip>
+                The management fee is applied as a multiplier on the cost basis. It covers agency oversight, process management, and margin. Ad spend and vendor pass-throughs are never marked up.
+              </HelpTooltip>
+            </div>
+            <div className="mb-3 flex items-end gap-3">
+              <div className="w-32">
+                <Label className="text-[11px]">
+                  {config.priceMode === "fixed" ? "Multiplier" : "Base multiplier"} override
+                </Label>
+                <Input
+                  type="number"
+                  step={0.5}
+                  min={1}
+                  max={20}
+                  placeholder={String(config.priceMode === "fixed" ? adminMarkupFixed : adminMarkupHybrid)}
+                  value={config.priceMode === "fixed"
+                    ? (config.markupFixedOverride ?? "")
+                    : (config.markupHybridOverride ?? "")}
+                  onChange={(e) => {
+                    const v = e.target.value === "" ? null : Number(e.target.value);
+                    onChange(config.priceMode === "fixed"
+                      ? { markupFixedOverride: v }
+                      : { markupHybridOverride: v });
+                  }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground pb-1.5">
+                Default {config.priceMode === "fixed" ? adminMarkupFixed : adminMarkupHybrid}× · leave blank to use admin setting
+              </p>
+            </div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                <tr className="border-b border-dashed border-paper-border">
+                  <td className="py-1.5 text-muted-foreground">Cost basis</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.totalCost)}</td>
+                </tr>
+                <tr className="border-b border-dashed border-paper-border">
+                  <td className="py-1.5 text-foreground font-medium">
+                    Management fee ({pricing.multiple}× − 1 = {pricing.multiple - 1}× on cost)
+                  </td>
+                  <td className="py-1.5 text-right font-mono font-medium text-primary">
+                    + {fmtMoney(pricing.fixedComponent - pricing.totalCost)}
+                  </td>
+                </tr>
+                <tr className="font-semibold">
+                  <td className="py-2 text-foreground">Agency fee</td>
+                  <td className="py-2 text-right font-mono text-foreground">{fmtMoney(pricing.fixedComponent)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* Hybrid variable section */}
+        {config.priceMode === "hybrid" && pricing.baselineVariable > 0 && (
+          <Card className="bg-paper border-paper-border">
+            <CardContent className="pt-4 pb-3">
+              <div className="font-mono-label text-[9px] text-primary-hover mb-2">Variable component</div>
+              <table className="w-full text-[12.5px]">
+                <tbody>
+                  <tr className="border-b border-dashed border-paper-border">
+                    <td className="py-1.5 text-muted-foreground">
+                      Variable at target ({outcomeTarget} × {fmtMoney(config.outcomeRate)}/{metricLabel})
+                    </td>
+                    <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.baselineVariable)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 3: Client invoice total */}
+        <Card className="border-primary/30">
+          <CardContent className="pt-4 pb-3">
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">Client invoice</div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                <tr className="border-b border-dashed border-border">
+                  <td className="py-1.5 text-muted-foreground">Agency fee</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.totalPrice)}</td>
+                </tr>
+                {pricing.adSpend > 0 && (
+                  <tr className="border-b border-dashed border-border">
+                    <td className="py-1.5 text-muted-foreground">
+                      Ad spend ({config.adSpendCadence})
+                      <span className="ml-1.5 text-[10px] text-muted-foreground-2">at cost</span>
+                    </td>
+                    <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.adSpend)}</td>
+                  </tr>
+                )}
                 {influencerCost > 0 && (
                   <tr className="border-b border-dashed border-border">
                     <td className="py-1.5 text-muted-foreground">
-                      Influencer / UGC{" "}
-                      <span className="text-[10px]">({influencerLines.map((v) => v.name).join(", ")})</span>
+                      Influencer / UGC
+                      <span className="ml-1.5 text-[10px] text-muted-foreground-2">at cost · {influencerLines.map((v) => v.name).join(", ")}</span>
                     </td>
                     <td className="py-1.5 text-right font-mono">{fmtMoney(influencerCost)}</td>
                   </tr>
                 )}
                 {otherVendorCostUsd > 0 && (
                   <tr className="border-b border-dashed border-border">
-                    <td className="py-1.5 text-muted-foreground">Other vendor costs</td>
+                    <td className="py-1.5 text-muted-foreground">
+                      Vendor pass-throughs
+                      <span className="ml-1.5 text-[10px] text-muted-foreground-2">at cost</span>
+                    </td>
                     <td className="py-1.5 text-right font-mono">{fmtMoney(otherVendorCostUsd)}</td>
                   </tr>
                 )}
                 {specialistLinesInr.length > 0 && (
                   <tr className="border-b border-dashed border-border">
-                    <td className="py-1.5 text-muted-foreground">Specialist retainer capacity (₹)</td>
+                    <td className="py-1.5 text-muted-foreground">Specialist retainer (₹)</td>
                     <td className="py-1.5 text-right font-mono">{fmtInr(pricing.specialistCostInr)}</td>
                   </tr>
                 )}
-                <tr>
-                  <td className="py-2 font-heading text-[15px] font-semibold">Grand total (USD)</td>
+                <tr className="border-t-2 border-primary">
+                  <td className="py-2 font-heading text-[15px] font-semibold text-primary">Grand total</td>
                   <td className="py-2 text-right font-heading text-[17px] font-semibold text-primary">{fmtMoney(pricing.grandTotal)}</td>
                 </tr>
               </tbody>

@@ -5,7 +5,15 @@ export interface WizardStep {
   label: string;
 }
 
-export function StepIndicator({ steps, activeIndex }: { steps: WizardStep[]; activeIndex: number }) {
+export function StepIndicator({
+  steps,
+  activeIndex,
+  onStepClick,
+}: {
+  steps: WizardStep[];
+  activeIndex: number;
+  onStepClick?: (index: number) => void;
+}) {
   return (
     <div className="flex items-start gap-0 mb-8">
       {steps.map((step, i) => (
@@ -18,16 +26,19 @@ export function StepIndicator({ steps, activeIndex }: { steps: WizardStep[]; act
               )}
             />
           )}
-          <div
+          <button
+            type="button"
+            onClick={() => onStepClick?.(i)}
             className={cn(
-              "mx-auto mb-1 flex h-[24px] w-[24px] items-center justify-center rounded-full font-mono text-[10px]",
+              "mx-auto mb-1 flex h-[24px] w-[24px] items-center justify-center rounded-full font-mono text-[10px] transition-opacity",
+              onStepClick ? "cursor-pointer hover:opacity-75" : "cursor-default",
               i < activeIndex && "bg-secondary text-[#0E141B]",
               i === activeIndex && "bg-primary text-[#0E141B]",
               i > activeIndex && "bg-muted border border-border-strong text-muted-foreground"
             )}
           >
             {i + 1}
-          </div>
+          </button>
           <div
             className={cn(
               "text-[9.5px] font-medium tracking-wide",

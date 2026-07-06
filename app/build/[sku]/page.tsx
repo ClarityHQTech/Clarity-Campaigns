@@ -245,7 +245,7 @@ export default function BuildWizardPage() {
         </div>
       </div>
 
-      <StepIndicator steps={SUB_STEPS} activeIndex={stepIndex} />
+      <StepIndicator steps={SUB_STEPS} activeIndex={stepIndex} onStepClick={(i) => setStepIndex(i)} />
 
       <div className="mb-8">
         {stepIndex === 0 && (
