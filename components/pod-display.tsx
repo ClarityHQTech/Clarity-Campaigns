@@ -196,9 +196,9 @@ export function PodDisplay({
         {/* Extra steps added by user */}
         {(podExtraSteps ?? []).map((extra) => {
           const roleInLibrary = ROLE_LIBRARY.some((r) => r.name === extra.role);
-          const extraRoleOptions = roleInLibrary || !extra.role
-            ? ROLE_LIBRARY
-            : [{ name: extra.role, dept: "Marketing" as const, level: "Custom", rate: extra.rate }, ...ROLE_LIBRARY];
+          const isCustomRole = !!extra.role && !roleInLibrary;
+          // If role isn't in the library, map it to __other__ so the raw string never renders in the trigger
+          const roleSelectValue = !extra.role ? "__nolerole__" : roleInLibrary ? extra.role : "__other_role__";
           const selectedFromStep = fromStepSelections[extra.id] ?? "";
 
           return (
@@ -220,15 +220,17 @@ export function PodDisplay({
                   )}
                 </div>
 
-                {/* Role picker — auto-fills rate from ROLE_LIBRARY */}
+                {/* Role picker — auto-fills rate from ROLE_LIBRARY; "Other" allows free text */}
                 <div className="mb-3 flex flex-wrap items-end gap-3">
                   <div className="w-64">
                     <Label className="mb-0.5">Role</Label>
                     <Select
-                      value={extra.role || "__none__"}
+                      value={roleSelectValue}
                       onValueChange={(v) => {
-                        if (v === "__none__") {
+                        if (v === "__nolerole__") {
                           onUpdateExtraStep?.(extra.id, { role: "" });
+                        } else if (v === "__other_role__") {
+                          if (!isCustomRole) onUpdateExtraStep?.(extra.id, { role: "" });
                         } else {
                           const lib = ROLE_LIBRARY.find((r) => r.name === v);
                           onUpdateExtraStep?.(extra.id, { role: v, ...(lib ? { rate: lib.rate } : {}) });
@@ -237,14 +239,23 @@ export function PodDisplay({
                     >
                       <SelectTrigger><SelectValue placeholder="Select role…" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__none__">Select role…</SelectItem>
-                        {extraRoleOptions.map((r) => (
+                        <SelectItem value="__nolerole__">Select role…</SelectItem>
+                        {ROLE_LIBRARY.map((r) => (
                           <SelectItem key={r.name} value={r.name}>
                             {r.name} — ${r.rate}/hr
                           </SelectItem>
                         ))}
+                        <SelectItem value="__other_role__">Other (enter name)…</SelectItem>
                       </SelectContent>
                     </Select>
+                    {(roleSelectValue === "__other_role__" || isCustomRole) && (
+                      <Input
+                        className="mt-1.5"
+                        placeholder="Role name"
+                        value={extra.role}
+                        onChange={(e) => onUpdateExtraStep?.(extra.id, { role: e.target.value })}
+                      />
+                    )}
                   </div>
                   <div className="w-24">
                     <Label className="mb-0.5">Hours</Label>
