@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
@@ -122,6 +123,21 @@ export function BriefForm({
             onChange={(e) => onChange({ goal: e.target.value })}
           />
         </div>
+        <div className="mt-4 flex items-start justify-between gap-4 rounded-[4px] border border-paper-border bg-paper px-3 py-3">
+          <div>
+            <div className="text-[12.5px] font-semibold text-paper-foreground">Creatives only</div>
+            <p className="text-[11px] text-muted-foreground-2 mt-0.5">
+              {config.creativesOnly
+                ? "Pod scoped to planning & production only — execution, monitoring and reporting steps removed. Client runs the campaign."
+                : "Full service — pod includes execution, monitoring and reporting alongside creative production."}
+            </p>
+          </div>
+          <Switch
+            checked={config.creativesOnly ?? false}
+            onCheckedChange={(v) => onChange({ creativesOnly: v })}
+            className="mt-0.5 flex-none"
+          />
+        </div>
       </Section>
 
       <Section title="Audience & Targeting">
@@ -138,12 +154,17 @@ export function BriefForm({
             </Select>
           </div>
           <div>
-            <Label>{isSales ? "Contact list size" : "Target audience size (drives staffing scale)"}</Label>
+            <Label>{isSales ? "Contact list size (drives outreach staffing scale)" : "Target audience size (informational)"}</Label>
             <Input
               type="number"
               value={config.audienceSize}
               onChange={(e) => onChange({ audienceSize: Number(e.target.value) || 0 })}
             />
+            {!isSales && (
+              <p className="mt-1 text-[10.5px] text-muted-foreground-2">
+                For marketing campaigns, staffing scales with asset quantity — not audience size. Estimated reach is computed from ad spend in Expected Results.
+              </p>
+            )}
           </div>
         </div>
         <p className="mb-3 text-[11px] text-[#6a7280]">

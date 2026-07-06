@@ -75,6 +75,7 @@ export interface CampaignConfig {
   outcomeDeltaThreshold: number;
   markupFixedOverride: number | null;
   markupHybridOverride: number | null;
+  creativesOnly: boolean;
 }
 
 export type CampaignStatus = "draft" | "proposal-sent" | "active" | "reporting" | "completed";
@@ -145,6 +146,7 @@ function buildDefaultConfig(sku: SkuId): CampaignConfig {
     outcomeDeltaThreshold: 10,
     markupFixedOverride: null,
     markupHybridOverride: null,
+    creativesOnly: false,
   };
 }
 

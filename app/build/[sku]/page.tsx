@@ -27,8 +27,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Download, CheckCircle2, Circle } from "lucide-react";
 
 const SUB_STEPS = [
-  { key: "brief", label: "Brief" },
-  { key: "pod", label: "Pod & Timeline" },
+  { key: "brief", label: "Brief & Team" },
+  { key: "vendors", label: "Vendors & Timeline" },
   { key: "results", label: "Expected Results" },
   { key: "pricing", label: "Pricing" },
   { key: "reporting", label: "Reporting" },
@@ -89,8 +89,17 @@ export default function BuildWizardPage() {
   }, [brand]);
 
   const suggestedPod = useMemo(
-    () => (ct && sku ? buildAutoPod(sku, config?.audienceSize ?? 0, templateSteps) : []),
-    [ct, sku, config?.audienceSize, templateSteps]
+    () =>
+      ct && sku
+        ? buildAutoPod(
+            sku,
+            config?.audienceSize ?? 0,
+            templateSteps,
+            ct.mode === "sales",
+            config?.creativesOnly ?? false,
+          )
+        : [],
+    [ct, sku, config?.audienceSize, config?.creativesOnly, templateSteps]
   );
   const pod = useMemo(
     () => applyPodOverrides(suggestedPod, config?.podOverrides ?? {}),
@@ -206,6 +215,15 @@ export default function BuildWizardPage() {
           <div className="flex flex-col gap-3">
             <BriefImport sku={sku} onFill={(p) => updateConfig(campaignId, p)} />
             <BriefForm ct={ct} config={cfg} onChange={(p) => updateConfig(campaignId, p)} />
+            <PodDisplay
+              pod={pod}
+              suggested={suggestedPod}
+              assignments={cfg.podAssignments}
+              onChange={(stepNumber, override) => setPodOverride(campaignId, stepNumber, override)}
+              onReset={(stepNumber) => resetPodOverride(campaignId, stepNumber)}
+              onAssign={(stepNumber, freelancerId) => setPodAssignment(campaignId, stepNumber, freelancerId)}
+              onClearAssign={(stepNumber) => clearPodAssignment(campaignId, stepNumber)}
+            />
           </div>
         )}
 
@@ -234,15 +252,6 @@ export default function BuildWizardPage() {
                 </div>
               </CardContent>
             </Card>
-            <PodDisplay
-              pod={pod}
-              suggested={suggestedPod}
-              assignments={cfg.podAssignments}
-              onChange={(stepNumber, override) => setPodOverride(campaignId, stepNumber, override)}
-              onReset={(stepNumber) => resetPodOverride(campaignId, stepNumber)}
-              onAssign={(stepNumber, freelancerId) => setPodAssignment(campaignId, stepNumber, freelancerId)}
-              onClearAssign={(stepNumber) => clearPodAssignment(campaignId, stepNumber)}
-            />
             <VendorTogglePanel
               sku={sku}
               assetTypes={assetTypes}
@@ -279,7 +288,7 @@ export default function BuildWizardPage() {
             {!cfg.timelineApproved && (
               <Card className="border-destructive/40">
                 <CardContent className="pt-4 text-[12.5px] text-destructive">
-                  Timeline has not been approved yet. Go back to Pod &amp; Timeline and approve it before finalizing pricing.
+                  Timeline has not been approved yet. Go back to Vendors &amp; Timeline and approve it before finalizing pricing.
                 </CardContent>
               </Card>
             )}

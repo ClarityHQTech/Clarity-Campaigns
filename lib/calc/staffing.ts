@@ -22,9 +22,9 @@ type TemplateStep = {
   active: boolean;
 };
 
-// Ported from applyAutoStaffing() in the source HTML: scale = audienceSize / 1000,
-// clamped to [0.4, 3]. The source only applies this scale for sales-mode campaigns;
-// this build applies it uniformly across SKUs using each brief's audience size input.
+// Scale factor for sales campaigns only (ABM, Retention): contact list size drives
+// outreach volume and therefore staffing effort. Marketing campaigns use scale = 1
+// because their work scales with asset quantity, not audience reach.
 export function scaleForAudience(audienceSize: number): number {
   if (!audienceSize || audienceSize <= 0) return 1;
   const scale = audienceSize / 1000;
@@ -38,8 +38,16 @@ export function rateForRole(roleName: string): number {
 
 // When templateSteps are provided (admin-configured), they are used as-is with no
 // audience scaling — the admin sets exact hours per step. Falls back to PROCS-based
-// audience-scaled auto-staffing when no template exists.
-export function buildAutoPod(sku: SkuId, audienceSize: number, templateSteps?: TemplateStep[]): PodRow[] {
+// auto-staffing when no template exists.
+// salesMode: true for ABM/Retention — audience size scales effort. false for marketing — scale = 1.
+// creativesOnly: when true, only planning/production steps (creative: true) are included.
+export function buildAutoPod(
+  sku: SkuId,
+  audienceSize: number,
+  templateSteps?: TemplateStep[],
+  salesMode?: boolean,
+  creativesOnly?: boolean,
+): PodRow[] {
   if (templateSteps && templateSteps.length > 0) {
     return templateSteps
       .filter((s) => s.active)
@@ -53,15 +61,17 @@ export function buildAutoPod(sku: SkuId, audienceSize: number, templateSteps?: T
       }));
   }
   const steps = PROCS[sku] ?? [];
-  const scale = scaleForAudience(audienceSize);
-  return steps.map((step) => ({
-    stepNumber: step.n,
-    stepTitle: step.t,
-    role: step.role,
-    hours: Math.round(step.baseHrs * scale),
-    rate: rateForRole(step.role),
-    out: step.out,
-  }));
+  const scale = salesMode ? scaleForAudience(audienceSize) : 1;
+  return steps
+    .filter((step) => !creativesOnly || step.creative)
+    .map((step) => ({
+      stepNumber: step.n,
+      stepTitle: step.t,
+      role: step.role,
+      hours: Math.round(step.baseHrs * scale),
+      rate: rateForRole(step.role),
+      out: step.out,
+    }));
 }
 
 export function podCost(pod: PodRow[]): number {
