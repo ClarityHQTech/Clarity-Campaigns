@@ -159,7 +159,7 @@ export default function BrandFoundationPage() {
               />
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-[#6a7280] flex items-center gap-1">
+          <p className="mt-3 text-[11px] text-muted-foreground-2 flex items-center gap-1">
             <FileText size={12} />
             Files are selected locally — no upload or storage occurs in this demo.
           </p>

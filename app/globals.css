@@ -1,35 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  /* page chrome — deep charcoal */
-  --background: #141922;
-  --foreground: #e8e4dc;
-  /* dark card surfaces */
-  --card: #1e2738;
-  --card-foreground: #e8e4dc;
-  /* borders on dark surfaces */
-  --border: #2c3a50;
-  --border-strong: #3d5068;
-  /* cream paper — used for form sections and content cards */
-  --paper: #faf7f0;
-  --paper-border: #dbd3c4;
-  --paper-foreground: #141922;
+  /* page chrome — warm brown-black (clarityhq dark sections) */
+  --background: #1c1712;
+  --foreground: #ece7dd;
+  /* dark card surfaces — slightly lifted warm charcoal */
+  --card: #26201a;
+  --card-foreground: #ece7dd;
+  /* borders on dark surfaces — warm brown */
+  --border: #3a3229;
+  --border-strong: #4d4235;
+  /* cream paper — light sections and content cards */
+  --paper: #f4f1e8;
+  --paper-border: #ddd5c4;
+  --paper-foreground: #1c1712;
   /* dark muted surfaces */
-  --muted: #1e2a3d;
-  --muted-foreground: #8a9cb5;
-  --muted-foreground-2: #6a7d96;
-  /* amber primary — pops clearly on dark charcoal */
-  --primary: #f49930;
-  --primary-hover: #dc8018;
-  --primary-foreground: #0e1116;
-  /* teal secondary */
-  --secondary: #28c4a8;
-  --secondary-foreground: #0e1116;
-  /* destructive */
-  --destructive: #e54a3b;
-  --destructive-foreground: #ffffff;
-  --ring: #f49930;
+  --muted: #241e18;
+  --muted-foreground: #a89f8f;
+  --muted-foreground-2: #837a68;
+  /* mustard/gold primary — clarityhq signature accent */
+  --primary: #d1a02e;
+  --primary-hover: #b8871c;
+  --primary-foreground: #1c1712;
+  /* sage-olive green secondary (acquisition/conversion accent) */
+  --secondary: #7a8455;
+  --secondary-foreground: #1c1712;
+  /* rust/brick red destructive (retention accent) */
+  --destructive: #b0553a;
+  --destructive-foreground: #f4f1e8;
+  --ring: #d1a02e;
+  /* input radius stays subtle; cards get their own larger radius */
   --radius: 0.5rem;
+  --radius-card: 1.25rem;
 }
 
 @theme inline {
@@ -54,7 +56,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-ring: var(--ring);
   --radius-DEFAULT: var(--radius);
-  --font-heading: var(--font-space-grotesk);
+  --radius-card: var(--radius-card);
+  --font-heading: var(--font-fraunces);
   --font-sans: var(--font-plus-jakarta-sans);
   --font-mono: var(--font-ibm-plex-mono);
 }
@@ -73,10 +76,36 @@ body {
 }
 
 .font-mono-label {
-  font-family: var(--font-sans), ui-sans-serif, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.heading-2tone .dim {
+  color: var(--muted-foreground);
+  font-weight: inherit;
+}
+
+/* ---- Alternating page sections (clarityhq landing rhythm) ---- */
+.section-dark {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Cream band: remaps base tokens so all children flip to light-on-dark-text automatically */
+.section-paper {
+  --background: var(--paper);
+  --foreground: var(--paper-foreground);
+  --card: #ffffff;
+  --card-foreground: var(--paper-foreground);
+  --muted: #ece6d8;
+  --muted-foreground: #6b6353;
+  --muted-foreground-2: #8a8272;
+  --border: var(--paper-border);
+  --border-strong: #cabfa8;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 ::selection {

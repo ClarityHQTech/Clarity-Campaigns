@@ -15,27 +15,27 @@ function esc(value: string | number): string {
 }
 
 const DOC_STYLES = `
-  body{font-family:'IBM Plex Sans',Arial,sans-serif;background:#faf8f3;color:#1b2129;margin:0;padding:0;font-size:14px;line-height:1.55}
+  body{font-family:'IBM Plex Sans',Arial,sans-serif;background:#f4f1e8;color:#1b2129;margin:0;padding:0;font-size:14px;line-height:1.55}
   .wrap{max-width:820px;margin:0 auto;padding:36px 28px 60px}
-  h1{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:600;margin:0 0 4px}
-  h2{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #e6e0d2}
-  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#e9941a;margin-bottom:6px}
-  .meta{color:#6a7280;font-size:12.5px;margin-bottom:18px}
+  h1{font-family:'Fraunces',Georgia,serif;font-size:26px;font-weight:600;margin:0 0 4px}
+  h2{font-family:'Fraunces',Georgia,serif;font-size:16px;font-weight:600;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #ddd5c4}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#d1a02e;margin-bottom:6px}
+  .meta{color:#837a68;font-size:12.5px;margin-bottom:18px}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px}
-  td,th{padding:7px 8px;border-bottom:1px solid #e6e0d2;text-align:left;vertical-align:top}
-  th{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#6a7280}
+  td,th{padding:7px 8px;border-bottom:1px solid #ddd5c4;text-align:left;vertical-align:top}
+  th{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#837a68}
   .num{text-align:right;font-family:'IBM Plex Mono',monospace}
-  .card{background:#fff;border:1px solid #e6e0d2;border-radius:4px;padding:14px 16px;margin-bottom:10px}
-  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;padding:2px 7px;border-radius:2px;background:#f0ecdf;color:#8a8578;margin:2px 3px 0 0}
-  .total-row td{font-weight:600;font-size:15px;border-top:2px solid #e9941a;border-bottom:none}
-  .note{font-size:11.5px;color:#6a7280;margin-top:4px}
-  .deliverable{margin-top:6px;border-left:2px solid #e9941a;background:#f0ecdf;padding:6px 10px;font-size:12px;color:#4a4a44}
-  footer{margin-top:36px;padding-top:14px;border-top:1px solid #e6e0d2;font-size:11.5px;color:#6a7280}
+  .card{background:#fff;border:1px solid #ddd5c4;border-radius:4px;padding:14px 16px;margin-bottom:10px}
+  .tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;padding:2px 7px;border-radius:2px;background:#efe9dc;color:#8a8578;margin:2px 3px 0 0}
+  .total-row td{font-weight:600;font-size:15px;border-top:2px solid #d1a02e;border-bottom:none}
+  .note{font-size:11.5px;color:#837a68;margin-top:4px}
+  .deliverable{margin-top:6px;border-left:2px solid #d1a02e;background:#efe9dc;padding:6px 10px;font-size:12px;color:#4a4a44}
+  footer{margin-top:36px;padding-top:14px;border-top:1px solid #ddd5c4;font-size:11.5px;color:#837a68}
   .bidgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .bidfield{border-bottom:1px solid #1b2129;min-height:22px;padding:2px 0}
-  .bidlabel{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#6a7280;margin-bottom:2px}
+  .bidlabel{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#837a68;margin-bottom:2px}
   .status-open{color:#4d9685;font-weight:600}
-  .status-assigned{color:#e9941a;font-weight:600}
+  .status-assigned{color:#d1a02e;font-weight:600}
 `;
 
 function documentShell(title: string, body: string): string {
@@ -83,7 +83,7 @@ function briefSectionsHtml(ct: CampaignType, config: CampaignConfig): string {
   ${
     config.assets.length > 0
       ? `<table style="margin-top:10px"><tr><th>Asset</th><th>Qty</th><th>Rate</th><th>Note</th></tr>${config.assets
-          .map((a) => `<tr><td>${esc(a.type)}</td><td>${esc(a.qty)}</td><td class="num">${fmtMoney(a.rate)}</td><td style="font-size:11.5px;color:#6a7280">${esc(a.note ?? "")}</td></tr>`)
+          .map((a) => `<tr><td>${esc(a.type)}</td><td>${esc(a.qty)}</td><td class="num">${fmtMoney(a.rate)}</td><td style="font-size:11.5px;color:#837a68">${esc(a.note ?? "")}</td></tr>`)
           .join("")}</table>`
       : `<p class="note">No deliverable assets added.</p>`
   }
@@ -119,8 +119,8 @@ ${pod
   .map(
     (row) => `<div class="card">
   <table><tr>
-    <td style="width:26px;color:#6a7280;font-size:12px">${row.stepNumber}</td>
-    <td><strong>${esc(row.stepTitle)}</strong> <span style="color:#6a7280;font-size:12px">(${esc(row.role)})</span></td>
+    <td style="width:26px;color:#837a68;font-size:12px">${row.stepNumber}</td>
+    <td><strong>${esc(row.stepTitle)}</strong> <span style="color:#837a68;font-size:12px">(${esc(row.role)})</span></td>
     <td class="num" style="white-space:nowrap">${row.hours} hrs</td>
   </tr></table>
   <div class="deliverable">${esc(row.out)}</div>
@@ -409,16 +409,16 @@ export function buildClientSummaryHtml(
         .map(
           (r) =>
             `<tr>
-              <td style="color:#6a7280">${r.stepNumber}</td>
+              <td style="color:#837a68">${r.stepNumber}</td>
               <td>${esc(r.stepTitle)}</td>
-              <td style="color:#6a7280;font-size:12px">${esc(r.role)}</td>
+              <td style="color:#837a68;font-size:12px">${esc(r.role)}</td>
               <td class="num">${r.hours}</td>
               <td class="num">${fmtMoney(r.rate)}</td>
               <td class="num">${fmtMoney(r.hours * r.rate)}</td>
             </tr>`,
         )
         .join("")}
-      <tr style="font-weight:600;border-top:2px solid #e9941a">
+      <tr style="font-weight:600;border-top:2px solid #d1a02e">
         <td colspan="3">Total</td>
         <td class="num">${totalHours} hrs</td>
         <td></td>
@@ -434,7 +434,7 @@ export function buildClientSummaryHtml(
   ${camp.config.notes ? `<p class="note"><strong>Notes:</strong> ${esc(camp.config.notes)}</p>` : ""}
   ${camp.config.risks ? `<p class="note"><strong>Risks / dependencies:</strong> ${esc(camp.config.risks)}</p>` : ""}
 </div>
-<hr style="border:none;border-top:1px solid #e6e0d2;margin:28px 0">`;
+<hr style="border:none;border-top:1px solid #ddd5c4;margin:28px 0">`;
     })
     .join("");
 

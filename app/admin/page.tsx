@@ -354,7 +354,7 @@ export default function AdminPage() {
                   <div>
                     <Label className="mb-1">
                       SKU scope{" "}
-                      <span className="normal-case text-[#8a8578]">
+                      <span className="normal-case text-muted-foreground-2">
                         (none selected = all campaign types)
                       </span>
                     </Label>
@@ -439,7 +439,7 @@ export default function AdminPage() {
                 </div>
               </div>
               {templateMode === "creativesonly" && (
-                <p className="mt-2 text-[11px] text-[#6a7280]">
+                <p className="mt-2 text-[11px] text-muted-foreground-2">
                   Creatives-only template: planning &amp; production steps only. Client runs execution, monitoring, and reporting.
                 </p>
               )}

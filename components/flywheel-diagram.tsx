@@ -31,9 +31,9 @@ function ringSegmentPath(startAngle: number, endAngle: number) {
 }
 
 const STAGES = [
-  { key: "acquisition", label: "ACQUISITION", start: -90, color: "var(--primary)", tint: "rgba(233,148,26,0.14)", Icon: Users },
-  { key: "conversion", label: "CONVERSION", start: -90 + 120, color: "var(--secondary)", tint: "rgba(77,150,133,0.14)", Icon: TrendingUp },
-  { key: "retention", label: "RETENTION", start: -90 + 240, color: "var(--destructive)", tint: "rgba(194,81,58,0.14)", Icon: Repeat },
+  { key: "acquisition", label: "ACQUISITION", start: -90,       fill: "#aeb98d", stroke: "#7f8f5f", Icon: Users },
+  { key: "conversion",  label: "CONVERSION", start: -90 + 120,  fill: "#d3a3a3", stroke: "#b57e7e", Icon: TrendingUp },
+  { key: "retention",   label: "RETENTION",  start: -90 + 240,  fill: "#9aa7b6", stroke: "#75849a", Icon: Repeat },
 ];
 
 export function FlywheelDiagram() {
@@ -65,7 +65,7 @@ export function FlywheelDiagram() {
         cy={CENTER}
         r={RING_R}
         fill="none"
-        stroke="rgba(233,148,26,0.25)"
+        stroke="color-mix(in srgb, var(--foreground) 18%, transparent)"
         strokeWidth="1.5"
         strokeDasharray="5 11"
       />
@@ -77,10 +77,10 @@ export function FlywheelDiagram() {
         const labelPos = polar(LABEL_R, mid);
         return (
           <g key={s.key}>
-            <path d={ringSegmentPath(s.start, end)} fill={s.tint} stroke={s.color} strokeWidth={1} />
-            <circle cx={iconPos.x} cy={iconPos.y} r={20} fill="var(--card)" stroke={s.color} strokeWidth={1.5} />
+            <path d={ringSegmentPath(s.start, end)} fill={s.fill} stroke={s.stroke} strokeWidth={1} />
+            <circle cx={iconPos.x} cy={iconPos.y} r={20} fill="var(--card)" stroke={s.stroke} strokeWidth={1.5} />
             <foreignObject x={iconPos.x - 11} y={iconPos.y - 11} width={22} height={22}>
-              <s.Icon size={22} color={s.color} strokeWidth={1.75} />
+              <s.Icon size={22} color={s.stroke} strokeWidth={1.75} />
             </foreignObject>
             <text
               x={labelPos.x}
@@ -91,7 +91,7 @@ export function FlywheelDiagram() {
               fontWeight={700}
               fontFamily="var(--font-mono)"
               letterSpacing="0.07em"
-              fill={s.color}
+              fill={s.stroke}
             >
               {s.label}
             </text>

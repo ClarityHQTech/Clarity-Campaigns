@@ -21,7 +21,12 @@ export function SkuCard({ ct }: { ct: CampaignType }) {
             {ct.mode === "sales" ? "Sales / Outbound" : "Marketing / Media"}
           </span>
         </div>
-        <h3 className="font-heading text-[17px] font-semibold mb-1.5">{ct.label}</h3>
+        <h3 className="font-heading heading-2tone text-[17px] font-semibold mb-1.5">
+          {(() => {
+            const m = ct.label.match(/^(.*?)(\s*\(.*\))$/);
+            return m ? (<>{m[1]}<span className="dim">{m[2]}</span></>) : ct.label;
+          })()}
+        </h3>
         <p className="text-[13px] text-muted-foreground leading-snug mb-3">{ct.desc}</p>
 
         <div className="mb-3 rounded-[3px] bg-muted px-2.5 py-2">

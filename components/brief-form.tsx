@@ -195,7 +195,7 @@ export function BriefForm({
             )}
           </div>
         </div>
-        <p className="mb-3 text-[11px] text-[#6a7280]">
+        <p className="mb-3 text-[11px] text-muted-foreground-2">
           Industry sets the suggested funnel benchmark below (Funnel &amp; Commercial) — you can still edit it there.
         </p>
         {isSales && (
@@ -222,7 +222,7 @@ export function BriefForm({
       <Section title="Channels & Assets">
         <div className="mb-3">
           <Label>
-            Channels <span className="normal-case text-[#6a7280]">(select any — {ct.label} typically uses {ct.channels.join(", ")})</span>
+            Channels <span className="normal-case text-muted-foreground-2">(select any — {ct.label} typically uses {ct.channels.join(", ")})</span>
           </Label>
           <div className="flex flex-wrap gap-1.5">
             {ALL_CHANNELS.map((c) => {
@@ -236,7 +236,7 @@ export function BriefForm({
                     "font-mono text-[10.5px] px-2.5 py-1 rounded-full border transition-colors",
                     selected
                       ? "bg-paper-foreground text-paper border-paper-foreground"
-                      : "bg-transparent text-[#6a7280] border-paper-border hover:border-primary-hover"
+                      : "bg-transparent text-muted-foreground-2 border-paper-border hover:border-primary-hover"
                   )}
                 >
                   {c}
@@ -311,7 +311,7 @@ export function BriefForm({
       </Section>
 
       <Section title="Funnel & Commercial">
-        <p className="mb-2 text-[11px] text-[#6a7280]">
+        <p className="mb-2 text-[11px] text-muted-foreground-2">
           Suggested from the {INDUSTRY_LIST.find((i) => i.id === config.industry)?.name} industry benchmark for
           this campaign&apos;s channels — editable.
         </p>
@@ -359,7 +359,7 @@ export function BriefForm({
             </Select>
           </div>
         </div>
-        <p className="mt-2 text-[11px] text-[#6a7280]">
+        <p className="mt-2 text-[11px] text-muted-foreground-2">
           Ad spend is shown separately in pricing and is never folded into the cost multiple.
         </p>
       </Section>
@@ -379,7 +379,7 @@ export function BriefForm({
             />
           </div>
         </div>
-        <p className="mt-2 text-[11px] text-[#6a7280]">
+        <p className="mt-2 text-[11px] text-muted-foreground-2">
           Weeks and sprints are set in the Pod &amp; Vendor step, since they drive staffing and timeline together.
         </p>
         <div className="mt-3">

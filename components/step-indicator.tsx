@@ -32,8 +32,8 @@ export function StepIndicator({
             className={cn(
               "mx-auto mb-1 flex h-[24px] w-[24px] items-center justify-center rounded-full font-mono text-[10px] transition-opacity",
               onStepClick ? "cursor-pointer hover:opacity-75" : "cursor-default",
-              i < activeIndex && "bg-secondary text-[#0E141B]",
-              i === activeIndex && "bg-primary text-[#0E141B]",
+              i < activeIndex && "bg-secondary text-primary-foreground",
+              i === activeIndex && "bg-primary text-primary-foreground",
               i > activeIndex && "bg-muted border border-border-strong text-muted-foreground"
             )}
           >
