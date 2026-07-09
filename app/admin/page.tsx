@@ -367,9 +367,9 @@ export default function AdminPage() {
                             type="button"
                             onClick={() => toggleSkuScope(v.id, ct.id, v.skuScope)}
                             className={cn(
-                              "font-mono text-[10px] px-2 py-1 rounded-[3px] border transition-colors",
+                              "font-mono text-[10px] px-2.5 py-1 rounded-full border transition-colors",
                               selected
-                                ? "bg-paper-foreground text-paper border-paper-foreground"
+                                ? "bg-primary/15 text-primary border-primary/50"
                                 : "bg-transparent text-muted-foreground-2 border-border-strong hover:border-primary-hover"
                             )}
                           >

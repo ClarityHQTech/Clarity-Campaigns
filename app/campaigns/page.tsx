@@ -71,9 +71,9 @@ export default function CampaignsPage() {
               key={t.value}
               onClick={() => setFilter(t.value)}
               className={cn(
-                "font-mono text-[10.5px] px-3 py-1.5 rounded-[3px] border transition-colors",
+                "font-mono text-[10.5px] px-3 py-1.5 rounded-full border transition-colors",
                 filter === t.value
-                  ? "bg-primary text-primary-foreground border-primary"
+                  ? "bg-primary/15 text-primary border-primary/50"
                   : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
               )}
             >
