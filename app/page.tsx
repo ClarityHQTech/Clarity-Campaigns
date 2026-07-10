@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { CAMPAIGN_TYPES, SkuId } from "@/lib/data/campaign-types";
 import { SkuCard } from "@/components/sku-card";
 import { FlywheelDiagram } from "@/components/flywheel-diagram";
 import { Button } from "@/components/ui/button";
 import { ClipboardList, Users2, DollarSign, CalendarCheck, LineChart } from "lucide-react";
+import { PrefillRedirect } from "@/components/prefill-redirect";
 
 const PROCESS_STEPS = [
   {
@@ -66,6 +68,10 @@ const FLYWHEEL_GROUPS: {
 export default function MarketplacePage() {
   return (
     <>
+      <Suspense fallback={null}>
+        <PrefillRedirect />
+      </Suspense>
+
       {/* ===== Section 1 · Hero + flywheel — CREAM ===== */}
       <section className="section-paper">
         <div className="mx-auto max-w-[1180px] px-4 py-14 lg:py-16">

@@ -74,6 +74,11 @@ export interface VendorLine {
 export type PriceMode = "fixed" | "hybrid";
 export type OutcomeMetric = "qualified" | "opportunity" | "closure" | "custom";
 
+// Preset selector: Standard ($499) / Growth ($499 + ad spend) / Custom (computePricing() below).
+export type Preset = "standard" | "growth" | "custom";
+
+export const STANDARD_PRICE_USD = 499;
+
 export interface PricingInput {
   sku: SkuId;
   pod: PodRow[];
@@ -167,6 +172,28 @@ export function computePricing(input: PricingInput): PricingResult {
     specialistCostInr,
     grandTotal: totalPrice + input.adSpend + vendorCostUsd,
     multiple,
+  };
+}
+
+// Standard/Growth presets bypass computePricing() entirely — flat $499 fee, with ad
+// spend passing through at cost for Growth. Custom preset defers to computePricing().
+export function resolvePrice(preset: Preset, input: PricingInput): PricingResult {
+  if (preset === "custom") return computePricing(input);
+
+  const adSpend = preset === "growth" ? input.adSpend : 0;
+  return {
+    podCost: 0,
+    assetCost: 0,
+    techCost: 0,
+    totalCost: 0,
+    fixedComponent: 0,
+    baselineVariable: 0,
+    totalPrice: STANDARD_PRICE_USD,
+    adSpend,
+    vendorCostUsd: 0,
+    specialistCostInr: 0,
+    grandTotal: STANDARD_PRICE_USD + adSpend,
+    multiple: 0,
   };
 }
 

@@ -7,6 +7,7 @@ export type FlywheelStage = "Acquisition" | "Conversion" | "Retention";
 
 export interface CampaignType {
   id: SkuId;
+  slug: string;
   label: string;
   mode: "sales" | "marketing";
   desc: string;
@@ -24,6 +25,7 @@ export interface CampaignType {
 export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   abm: {
     id: "abm",
+    slug: "outbound-sales",
     label: "Outbound Sales",
     mode: "sales",
     desc: "Multi-touch outbound via email, LinkedIn, and WhatsApp on a fixed account book.",
@@ -35,6 +37,7 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   },
   social: {
     id: "social",
+    slug: "social-organic",
     label: "Social Organic",
     mode: "marketing",
     desc: "Platform-native content strategy across owned channels.",
@@ -46,6 +49,7 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   },
   content: {
     id: "content",
+    slug: "content-led",
     label: "Content-Led (SEO/AEO)",
     mode: "marketing",
     desc: "Ranking on search and AI answer engines through authoritative content.",
@@ -57,6 +61,7 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   },
   performance: {
     id: "performance",
+    slug: "performance",
     label: "Performance Marketing",
     mode: "marketing",
     desc: "Paid media on Meta and Google with creatives and weekly optimisation.",
@@ -68,6 +73,7 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
   },
   retention: {
     id: "retention",
+    slug: "retention",
     label: "Customer Retention",
     mode: "sales",
     desc: "Behavioural email and WhatsApp flows for existing customers.",
@@ -80,6 +86,19 @@ export const CAMPAIGN_TYPES: Record<SkuId, CampaignType> = {
 };
 
 export const CAMPAIGN_TYPE_LIST: CampaignType[] = Object.values(CAMPAIGN_TYPES);
+
+export const SKU_BY_SLUG: Record<string, SkuId> = Object.fromEntries(
+  Object.values(CAMPAIGN_TYPES).map((c) => [c.slug, c.id])
+);
+
+export function slugToSku(slug: string | null): SkuId | null {
+  if (!slug) return null;
+  return SKU_BY_SLUG[slug] ?? (CAMPAIGN_TYPES[slug as SkuId] ? (slug as SkuId) : null);
+}
+
+export function skuToSlug(sku: SkuId): string {
+  return CAMPAIGN_TYPES[sku].slug;
+}
 
 export interface AssetTypeDef {
   type: string;

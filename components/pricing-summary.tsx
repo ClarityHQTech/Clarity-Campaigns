@@ -3,7 +3,7 @@
 import { SkuId } from "@/lib/data/campaign-types";
 import { CampaignConfig, VendorToggleState, CustomVendorLine } from "@/lib/store/campaign-store";
 import { PodRow } from "@/lib/calc/staffing";
-import { computePricing, outcomeTargetFor, PriceMode, OutcomeMetric, VendorLine } from "@/lib/calc/pricing";
+import { resolvePrice, outcomeTargetFor, PriceMode, OutcomeMetric, VendorLine, STANDARD_PRICE_USD } from "@/lib/calc/pricing";
 import { AdminVendor, useAdminStore } from "@/lib/store/admin-store";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,8 +73,9 @@ export function PricingSummary({
     asp: config.asp,
   });
   const vendorLines = vendorLinesFor(config.vendorToggles, config.customVendors, adminVendors, config.influencers ?? []);
+  const preset = config.preset ?? "standard";
 
-  const pricing = computePricing({
+  const pricing = resolvePrice(preset, {
     sku,
     pod,
     assets: config.assets,
@@ -111,6 +112,47 @@ export function PricingSummary({
 
   return (
     <div>
+      {preset !== "custom" && (
+        <Card className="border-primary/30">
+          <CardContent className="pt-4 pb-3">
+            <div className="font-mono-label text-[9px] text-muted-foreground mb-2">
+              {preset === "growth" ? "Growth pricing" : "Standard pricing"}
+            </div>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                <tr className="border-b border-dashed border-border">
+                  <td className="py-1.5 text-muted-foreground">Campaign</td>
+                  <td className="py-1.5 text-right font-mono">{fmtMoney(STANDARD_PRICE_USD)}</td>
+                </tr>
+                <tr className="border-b border-dashed border-border">
+                  <td className="py-1.5 text-muted-foreground">Human Pod</td>
+                  <td className="py-1.5 text-right font-mono">Included</td>
+                </tr>
+                <tr className="border-b border-dashed border-border">
+                  <td className="py-1.5 text-muted-foreground">Brand Intel</td>
+                  <td className="py-1.5 text-right font-mono">Included</td>
+                </tr>
+                {pricing.adSpend > 0 && (
+                  <tr className="border-b border-dashed border-border">
+                    <td className="py-1.5 text-muted-foreground">
+                      Ad spend ({config.adSpendCadence})
+                      <span className="ml-1.5 text-[10px] text-muted-foreground-2">at cost</span>
+                    </td>
+                    <td className="py-1.5 text-right font-mono">{fmtMoney(pricing.adSpend)}</td>
+                  </tr>
+                )}
+                <tr className="border-t-2 border-primary">
+                  <td className="py-2 font-heading text-[15px] font-semibold text-primary">Total</td>
+                  <td className="py-2 text-right font-heading text-[17px] font-semibold text-primary">{fmtMoney(pricing.grandTotal)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {preset === "custom" && (
+      <>
       {/* Pricing mode toggle */}
       <div className="mb-4 flex gap-2">
         {(["fixed", "hybrid"] as PriceMode[]).map((mode) => (
@@ -419,6 +461,8 @@ export function PricingSummary({
           </Card>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }

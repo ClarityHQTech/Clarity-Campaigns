@@ -1,10 +1,11 @@
 "use client";
 
 import { CampaignType } from "@/lib/data/campaign-types";
-import { CampaignConfig } from "@/lib/store/campaign-store";
+import { CampaignConfig, Preset } from "@/lib/store/campaign-store";
 import { ASSET_TYPES } from "@/lib/data/campaign-types";
 import { INDUSTRY_LIST, IndustryId, ALL_CHANNELS } from "@/lib/data/industry-benchmarks";
 import { industryFunnelBenchmark } from "@/lib/calc/reach";
+import { STANDARD_PRICE_USD, computePricing } from "@/lib/calc/pricing";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useAdminStore } from "@/lib/store/admin-store";
-import { cn } from "@/lib/utils";
+import { vendorLinesFor } from "@/components/pricing-summary";
+import { cn, fmtMoney } from "@/lib/utils";
 
 const OBJECTIVES = [
   "Lead Generation",
@@ -27,6 +29,12 @@ const OBJECTIVES = [
 ];
 
 const SOURCES = ["Account book", "ICP research", "Inbound / warm", "Network referral"];
+
+const PRESETS: { value: Preset; label: string }[] = [
+  { value: "standard", label: `Standard ($${STANDARD_PRICE_USD})` },
+  { value: "growth", label: `Growth ($${STANDARD_PRICE_USD} + ad spend)` },
+  { value: "custom", label: "Custom brief" },
+];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -49,10 +57,53 @@ export function BriefForm({
   onChange: (partial: Partial<CampaignConfig>) => void;
 }) {
   const clients = useAdminStore((s) => s.clients);
+  const adminVendors = useAdminStore((s) => s.vendors);
   const isSales = ct.mode === "sales";
   const hasEmail = config.channels.includes("Email");
   const hasLI = config.channels.includes("LinkedIn");
   const hasWA = config.channels.includes("WhatsApp");
+
+  function vendorCostUsdFor(cfg: CampaignConfig): number {
+    const vendorLines = vendorLinesFor(cfg.vendorToggles, cfg.customVendors, adminVendors, cfg.influencers ?? []);
+    return computePricing({
+      sku: ct.id,
+      pod: [],
+      assets: [],
+      audience: 0,
+      channels: [],
+      emailSteps: 0,
+      liSteps: 0,
+      waSteps: 0,
+      adSpend: 0,
+      vendorLines,
+      priceMode: "fixed",
+      outcomeMetric: "opportunity",
+      outcomeTarget: 0,
+      outcomeRate: 0,
+      outcomeDeltaRate: 0,
+      outcomeDeltaThreshold: 0,
+    }).vendorCostUsd;
+  }
+
+  function handlePresetChange(preset: Preset) {
+    const hasVendorAddOns =
+      Object.values(config.vendorToggles ?? {}).some((v) => v?.on) ||
+      (config.customVendors ?? []).length > 0 ||
+      (config.influencers ?? []).length > 0;
+
+    if (config.preset === "custom" && preset !== "custom" && hasVendorAddOns) {
+      const amount = vendorCostUsdFor(config);
+      const label = preset === "growth" ? "Growth" : "Standard";
+      const proceed = window.confirm(
+        `This campaign has vendor add-ons worth ${fmtMoney(amount)}. Switching to ${label} will remove them from pricing. Continue?`
+      );
+      if (!proceed) return;
+      onChange({ preset, vendorToggles: {}, customVendors: [], influencers: [] });
+      return;
+    }
+
+    onChange({ preset });
+  }
 
   function updateAsset(index: number, partial: Partial<{ type: string; qty: number; rate: number; note: string }>) {
     const next = [...config.assets];
@@ -91,10 +142,50 @@ export function BriefForm({
 
   return (
     <div className="flex flex-col gap-3">
+      <Section title="Pricing preset">
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => handlePresetChange(p.value)}
+              className={cn(
+                "text-[11.5px] font-medium px-3.5 py-1.5 rounded-full border transition-colors",
+                config.preset === p.value
+                  ? "bg-primary/15 text-primary border-primary/50"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-border-strong"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </Section>
+
       <Section title="Campaign Overview">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <Label>Client <span className="text-destructive">*</span></Label>
+            <Label>Brand name <span className="text-destructive">*</span></Label>
+            <Input value={config.brandName ?? ""} onChange={(e) => onChange({ brandName: e.target.value })} />
+          </div>
+          <div>
+            <Label>Country <span className="text-destructive">*</span></Label>
+            <Input value={config.country ?? ""} onChange={(e) => onChange({ country: e.target.value })} />
+          </div>
+          <div>
+            <Label>Contact first name</Label>
+            <Input value={config.contactFirstName ?? ""} onChange={(e) => onChange({ contactFirstName: e.target.value })} />
+          </div>
+          {config.brandXrayScore != null && (
+            <div>
+              <Label>Brand X-Ray score</Label>
+              <div className="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-[12px] text-muted-foreground">
+                {config.brandXrayScore}
+              </div>
+            </div>
+          )}
+          <div>
+            <Label>Client</Label>
             {clients.length === 0 ? (
               <div className="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-[12px] text-muted-foreground">
                 No clients yet — <a href="/admin" className="ml-1 underline underline-offset-2 text-primary">add one in Admin</a>
@@ -171,7 +262,7 @@ export function BriefForm({
       <Section title="Audience & Targeting">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-3">
           <div>
-            <Label>Industry / Category</Label>
+            <Label>Industry / Category <span className="text-destructive">*</span></Label>
             <Select value={config.industry} onValueChange={handleIndustryChange}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>

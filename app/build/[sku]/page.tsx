@@ -7,7 +7,7 @@ import { useCampaignStore, CampaignStatus, ExtraPodStep } from "@/lib/store/camp
 import { useAdminStore } from "@/lib/store/admin-store";
 import { buildAutoPod, applyPodOverrides } from "@/lib/calc/staffing";
 import { buildSprintBreakdown } from "@/lib/calc/sprint";
-import { computePricing, outcomeTargetFor } from "@/lib/calc/pricing";
+import { resolvePrice, outcomeTargetFor } from "@/lib/calc/pricing";
 import { buildBriefHtml, buildProposalHtml, downloadHtmlFile } from "@/lib/export/html-export";
 import { StepIndicator } from "@/components/step-indicator";
 import { BriefImport } from "@/components/brief-import";
@@ -159,7 +159,7 @@ export default function BuildWizardPage() {
       closePct: config.closePct,
       asp: config.asp,
     });
-    return computePricing({
+    return resolvePrice(config.preset ?? "standard", {
       sku,
       pod,
       assets: config.assets,
@@ -295,20 +295,27 @@ export default function BuildWizardPage() {
                 </div>
               </CardContent>
             </Card>
-            <VendorTogglePanel
-              sku={sku}
-              assetTypes={assetTypes}
-              vendorToggles={cfg.vendorToggles}
-              onToggle={(id, state) => setVendorToggle(campaignId, id, state)}
-              customVendors={cfg.customVendors}
-              onAddCustomVendor={() => addCustomVendor(campaignId)}
-              onUpdateCustomVendor={(id, partial) => updateCustomVendor(campaignId, id, partial)}
-              onRemoveCustomVendor={(id) => removeCustomVendor(campaignId, id)}
-              influencers={cfg.influencers ?? []}
-              onAddInfluencer={() => addInfluencer(campaignId)}
-              onUpdateInfluencer={(influencerId, partial) => updateInfluencer(campaignId, influencerId, partial)}
-              onRemoveInfluencer={(influencerId) => removeInfluencer(campaignId, influencerId)}
-            />
+            {(cfg.preset ?? "standard") === "custom" ? (
+              <VendorTogglePanel
+                sku={sku}
+                assetTypes={assetTypes}
+                vendorToggles={cfg.vendorToggles}
+                onToggle={(id, state) => setVendorToggle(campaignId, id, state)}
+                customVendors={cfg.customVendors}
+                onAddCustomVendor={() => addCustomVendor(campaignId)}
+                onUpdateCustomVendor={(id, partial) => updateCustomVendor(campaignId, id, partial)}
+                onRemoveCustomVendor={(id) => removeCustomVendor(campaignId, id)}
+                influencers={cfg.influencers ?? []}
+                onAddInfluencer={() => addInfluencer(campaignId)}
+                onUpdateInfluencer={(influencerId, partial) => updateInfluencer(campaignId, influencerId, partial)}
+                onRemoveInfluencer={(influencerId) => removeInfluencer(campaignId, influencerId)}
+              />
+            ) : (
+              <div className="rounded-[var(--radius-card)] border border-border bg-card p-4 text-[12.5px] text-muted-foreground">
+                Vendor add-ons (video, influencers) are available on the <span className="text-foreground font-medium">Custom brief</span> preset.
+                Switch presets above if you need them for this campaign.
+              </div>
+            )}
             {sprintBreakdown && (
               <div>
                 <div className="font-mono-label text-[9.5px] text-primary-hover mb-3">Timeline</div>

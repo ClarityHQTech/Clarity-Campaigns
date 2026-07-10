@@ -3,8 +3,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { SkuId, CAMPAIGN_TYPES } from "../data/campaign-types";
-import type { OutcomeMetric, PriceMode } from "../calc/pricing";
+import type { OutcomeMetric, PriceMode, Preset } from "../calc/pricing";
 import { industryFunnelBenchmark } from "../calc/reach";
+
+export type { Preset } from "../calc/pricing";
 
 export interface ExtraPodStep {
   id: string;
@@ -44,6 +46,11 @@ export interface InfluencerEntry {
 }
 
 export interface CampaignConfig {
+  preset: Preset;
+  brandName: string;
+  country: string;
+  contactFirstName: string;
+  brandXrayScore: number | null;
   client: string;
   clientId: string;
   clientSpoc: string;
@@ -120,6 +127,11 @@ function buildDefaultConfig(sku: SkuId): CampaignConfig {
   const defaultIndustry = ct.bestFitIndustries[0] ?? "d2c";
   const benchmark = industryFunnelBenchmark(defaultIndustry, ct.channels);
   return {
+    preset: "standard",
+    brandName: "",
+    country: "",
+    contactFirstName: "",
+    brandXrayScore: null,
     client: "",
     clientId: "",
     clientSpoc: "",
@@ -203,6 +215,7 @@ interface CampaignStoreState {
   updateActuals: (id: string, partial: Partial<CampaignActuals>) => void;
   // config mutations
   updateConfig: (id: string, partial: Partial<CampaignConfig>) => void;
+  setPreset: (id: string, preset: Preset) => void;
   setVendorToggle: (id: string, vendorId: string, state: VendorToggleState) => void;
   setPodOverride: (id: string, stepNumber: number, override: { role: string; hours: number; rate: number }) => void;
   resetPodOverride: (id: string, stepNumber: number) => void;
@@ -291,6 +304,9 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       updateConfig: (id, partial) =>
         set((s) => ({ campaigns: withConfig(s.campaigns, id, () => partial) })),
+
+      setPreset: (id, preset) =>
+        set((s) => ({ campaigns: withConfig(s.campaigns, id, () => ({ preset })) })),
 
       setVendorToggle: (id, vendorId, vendorState) =>
         set((s) => ({

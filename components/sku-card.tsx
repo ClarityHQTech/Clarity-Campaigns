@@ -51,7 +51,7 @@ export function SkuCard({ ct }: { ct: CampaignType }) {
             </span>
           ))}
         </div>
-        <Link href={`/build/new?sku=${ct.id}`} className="block">
+        <Link href={`/build/new?type=${ct.slug}`} className="block">
           <Button className="w-full">Build this campaign</Button>
         </Link>
       </CardContent>
