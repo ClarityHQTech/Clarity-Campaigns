@@ -12,9 +12,9 @@ export function PlanPodGrid({ pod }: { pod: HumanPodRole[] }) {
         {pod.map((row) => (
           <div
             key={row.role}
-            className="flex items-center justify-between rounded-[4px] border-l-2 border-primary bg-paper px-3 py-2.5"
+            className="flex items-center justify-between rounded-[4px] border-l-2 border-primary bg-muted px-3 py-2.5"
           >
-            <span className="text-[12.5px] font-semibold text-paper-foreground">{row.role}</span>
+            <span className="text-[12.5px] font-semibold text-foreground">{row.role}</span>
             <span className="font-mono text-[11px] text-muted-foreground-2">{row.hours} hrs</span>
           </div>
         ))}

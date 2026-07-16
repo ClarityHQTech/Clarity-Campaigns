@@ -126,7 +126,7 @@ function PlanPageContent() {
           <div className="font-mono-label mb-3 text-[9.5px] text-muted-foreground">
             Your roadmap{duration > 1 ? ` — ${duration} months` : ""}
           </div>
-          <Card className="border-paper-border bg-paper text-paper-foreground">
+          <Card>
             <CardContent className="p-3 pt-3">
               {roadmap.map((step) => {
                 const rsku = CAMPAIGN_ID_TO_SKU[step.campaign];
@@ -136,7 +136,7 @@ function PlanPageContent() {
                 return (
                   <div
                     key={`${step.monthLabel}-${step.campaign}`}
-                    className="flex gap-3 border-b border-paper-border px-1 py-2.5 last:border-b-0"
+                    className="flex gap-3 border-b border-border px-1 py-2.5 last:border-b-0"
                   >
                     <div
                       className={cn(
@@ -147,7 +147,7 @@ function PlanPageContent() {
                       {step.monthLabel}
                     </div>
                     <div>
-                      <div className="mb-0.5 text-[13px] font-semibold text-paper-foreground">
+                      <div className="mb-0.5 text-[13px] font-semibold text-foreground">
                         {rct.label}
                         {isCurrent && (
                           <span className="ml-1.5 align-middle rounded bg-primary/12 px-1.5 py-px font-mono text-[8.5px] font-bold uppercase tracking-[0.05em] text-primary-hover">
@@ -155,7 +155,7 @@ function PlanPageContent() {
                           </span>
                         )}
                       </div>
-                      <div className="text-[11.5px] leading-[1.4] text-[#6b6353]">{rcopy.description}</div>
+                      <div className="text-[11.5px] leading-[1.4] text-muted-foreground">{rcopy.description}</div>
                     </div>
                   </div>
                 );
@@ -176,10 +176,10 @@ function PlanPageContent() {
 
         <div>
           <div className="font-mono-label mb-3 text-[9.5px] text-muted-foreground">Human Pod</div>
-          <Card className="border-paper-border bg-paper">
+          <Card>
             <CardContent className="pt-5">
               <PlanPodGrid pod={planDetails.humanPod} />
-              <div className="mt-3 text-right font-mono text-[11px] text-[#6b6353]">
+              <div className="mt-3 text-right font-mono text-[11px] text-muted-foreground">
                 {totalHours} hrs total{duration > 1 ? " · Month 1 only" : ""}
               </div>
             </CardContent>
@@ -188,7 +188,7 @@ function PlanPageContent() {
 
         <div>
           <div className="font-mono-label mb-3 text-[9.5px] text-muted-foreground">Expected results</div>
-          <Card className="border-paper-border bg-paper text-paper-foreground">
+          <Card>
             <CardContent className="pt-5">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {copy.goalLine.split(", ").map((metric) => (

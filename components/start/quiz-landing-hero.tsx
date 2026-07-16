@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { StatsBar } from "@/components/start/stats-bar";
 import { FlywheelIntro } from "@/components/start/flywheel-intro";
 
@@ -36,16 +35,8 @@ export function QuizLandingHero() {
       </section>
 
       <section className="section-paper relative -mt-8 rounded-t-[2.5rem]">
-        <div className="mx-auto max-w-[1180px] px-4 pb-1 pt-2">
+        <div className="mx-auto max-w-[1180px] px-4 pt-2">
           <div className="font-mono-label pt-5 text-center text-[10px] text-primary">Find your campaign ↓</div>
-          <div className="pt-2.5 text-center">
-            <Link
-              href="/faq"
-              className="text-[11px] text-muted-foreground-2 underline underline-offset-2 hover:text-foreground"
-            >
-              Questions? Read the FAQ
-            </Link>
-          </div>
         </div>
       </section>
     </>

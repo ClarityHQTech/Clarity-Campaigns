@@ -95,9 +95,9 @@ function PayPageContent() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <Card className="border-paper-border bg-paper text-paper-foreground">
+        <Card>
           <CardContent className="pt-5">
-            <div className="font-mono-label mb-3 text-[9.5px] text-primary-hover">Campaign summary</div>
+            <div className="font-mono-label mb-3 text-[9.5px] text-primary">Campaign summary</div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {[
                 ["Campaign", ct.label],
@@ -117,9 +117,9 @@ function PayPageContent() {
         </Card>
 
         {duration > 1 && (
-          <Card className="border-paper-border bg-paper text-paper-foreground">
+          <Card>
             <CardContent className="pt-5">
-              <div className="font-mono-label mb-3 text-[9.5px] text-primary-hover">
+              <div className="font-mono-label mb-3 text-[9.5px] text-primary">
                 Your {duration}-month roadmap
               </div>
               {roadmap.map((step) => {
