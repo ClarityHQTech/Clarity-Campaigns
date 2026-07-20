@@ -1,4 +1,4 @@
-import { GrowthFlywheelDiagram } from "@/components/growth-flywheel-diagram";
+import { FlywheelDiagram } from "@/components/flywheel-diagram";
 import { CampaignPlaybookAccordion } from "@/components/campaign-playbook-accordion";
 import { Button } from "@/components/ui/button";
 import { HUBSPOT_MEETING_LINK } from "@/components/talk-to-us-cta";
@@ -42,13 +42,6 @@ const FLYWHEEL_CARDS = [
     title: "Get repeated",
     body: "Protect and extend revenue you've already earned — behavioural lifecycle flows across email and WhatsApp.",
   },
-];
-
-const MODEL_CARDS = [
-  { v: "3 days", t: "To live", d: "Brief in, campaign live — not a proposal, an execution." },
-  { v: "4 wks", t: "Sprint length", d: "Full end-to-end delivery, then a performance report on day 28." },
-  { v: "AI", t: "Native AI engine", d: "Runs the research, drafting, targeting and distribution at machine speed." },
-  { v: "5–6", t: "Human pod", d: "Specialists who brief, QA, and ship every deliverable against your brand." },
 ];
 
 const MATCH_STEPS = [
@@ -116,7 +109,7 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {HOOK_CARDS.map((h) => (
               <div key={h.tag} className="rounded-2xl border border-border bg-card p-6">
-                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-primary">{h.tag}</div>
+                <div className="mb-2 text-[12.5px] font-bold uppercase tracking-[0.08em] text-primary">{h.tag}</div>
                 <h3 className="font-heading mb-2 text-[18px]">{h.title}</h3>
                 <p className="text-[13.5px] text-muted-foreground">{h.body}</p>
               </div>
@@ -134,7 +127,9 @@ export default function MarketplacePage() {
             body="Most brands are guessing which lever to pull. We start by placing you on the flywheel, then run the campaign that moves you forward fastest."
           />
           <div className="mb-9 flex justify-center">
-            <GrowthFlywheelDiagram />
+            <div className="w-full max-w-[420px]">
+              <FlywheelDiagram />
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {FLYWHEEL_CARDS.map((f) => (
@@ -144,26 +139,6 @@ export default function MarketplacePage() {
                 </span>
                 <h3 className="font-heading mb-1.5 text-[18px]">{f.title}</h3>
                 <p className="text-[13.5px] text-muted-foreground">{f.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== How it runs ===== */}
-      <section className="border-t border-border py-14">
-        <div className="mx-auto max-w-[1080px] px-5">
-          <SectionHead
-            eyebrow="How it runs"
-            title="Native AI for speed. A human pod for judgment."
-            body="Every campaign pairs AI-run research, drafting, and distribution with a named team of specialists who review, QA, and own the outcome."
-          />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {MODEL_CARDS.map((m) => (
-              <div key={m.t} className="px-3 py-5 text-center">
-                <div className="font-heading mb-1.5 text-[22px] text-primary">{m.v}</div>
-                <div className="mb-1 text-[13px] font-bold">{m.t}</div>
-                <div className="text-[12.5px] text-muted-foreground">{m.d}</div>
               </div>
             ))}
           </div>

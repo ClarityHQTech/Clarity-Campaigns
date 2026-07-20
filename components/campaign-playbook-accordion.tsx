@@ -82,7 +82,7 @@ export function CampaignPlaybookAccordion() {
                   <div className="mt-4 rounded-[10px] border border-primary/20 bg-primary/[.06] px-3.5 py-3 text-[13px]">
                     <b className="text-primary">Expected outcome:</b> {playbook.kpi.IN}
                     <span className="mt-1.5 block text-[10.5px] font-semibold uppercase tracking-[0.06em] text-muted-foreground-2">
-                      Illustrative example — adjusted to your industry &amp; geography on the call
+                      Illustrative example — adjusted to your industry &amp; geography
                     </span>
                   </div>
                 </div>
