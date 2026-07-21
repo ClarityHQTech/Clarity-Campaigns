@@ -6,8 +6,8 @@ import { HUBSPOT_MEETING_LINK } from "@/components/talk-to-us-cta";
 const HERO_STATS = [
   { v: "3 days", l: "brief to live" },
   { v: "4 weeks", l: "per sprint" },
-  { v: "5", l: "campaign types" },
-  { v: "5–6", l: "specialists per pod" },
+  { v: "5", l: "campaign types depending on your business need" },
+  { v: "5–6", l: "Human specialists per pod" },
 ];
 
 const HOOK_CARDS = [
@@ -34,7 +34,7 @@ const FLYWHEEL_CARDS = [
     badgeClass: "bg-secondary/[.15] text-secondary border-secondary/35",
     stage: "Conversion",
     title: "Get chosen",
-    body: "Turn attention into pipeline and revenue — outbound sales to a named account book, or performance media tuned to ROAS.",
+    body: "Turn attention into a pipeline and revenue — outbound sales from a targeted account book, or sales from an existing creative.",
   },
   {
     badgeClass: "bg-destructive/[.15] text-destructive border-destructive/35",
@@ -114,6 +114,17 @@ export default function MarketplacePage() {
                 <p className="text-[13.5px] text-muted-foreground">{h.body}</p>
               </div>
             ))}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <a
+              href="https://meetings-na2.hubspot.com/virat-mohan?uuid=a992be4e-6a1d-4957-bc6d-d85f05007307"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="accent" size="lg" className="h-11 px-6 text-[14px]">
+                Schedule a Call →
+              </Button>
+            </a>
           </div>
         </div>
       </section>
