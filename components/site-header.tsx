@@ -31,16 +31,13 @@ export function SiteHeader() {
           className="flex flex-col gap-[2px] bg-[#F5F5F0]/70 backdrop-blur-[12px] px-[20px] py-[11px] rounded-full no-underline"
         >
           <Image
-            src="/assets/img/new-logo-wordmark.png"
+            src="/assets/img/new-logo-full.png"
             alt="Clarity HQ"
-            width={1212}
-            height={216}
+            width={1213}
+            height={259}
             priority
-            className="h-[26px] w-auto"
+            className="h-[46px] w-auto mix-blend-multiply"
           />
-          <span className="text-[10px] tracking-[0.05em] text-[#9a9a9a] font-normal uppercase leading-none">
-            Human Quotient · AI Era
-          </span>
         </Link>
         
         <div className="flex gap-[10px] items-center">

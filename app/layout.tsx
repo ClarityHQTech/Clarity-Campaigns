@@ -29,17 +29,11 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/assets/img/favicon.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/assets/img/favicon-dark.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: dark)",
+        url: "/assets/img/new-logo-icon copy.png",
+        type: "image/png",
       },
     ],
-    apple: "/assets/img/favicon.svg",
+    apple: "/assets/img/new-logo-icon copy.png",
   },
 };
 
